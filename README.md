@@ -1,3 +1,5 @@
+![Logo](https://cdn.discordapp.com/attachments/714536895345852517/714537480270905394/GlowCloud.jpg)
+
 # GlowCloud Technology 2
 
 Here you can find the whole project of the Cloud GlowCloud, have fun.
