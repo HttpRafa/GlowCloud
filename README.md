@@ -25,7 +25,7 @@ For more info about the Cloud please visit our spigotmc.org page
 
 The cloud was developed using Maven and only supports Maven!
 
-``xml
+```xml
 
 Test
 
