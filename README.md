@@ -6,14 +6,14 @@ For more info about the Cloud please visit our spigotmc.org page
 
 ### Version Support
 
-* ➥ Spigot
+➥ Spigot
     * » Default 1.8.8 - 1.15.5
     * » Taco 1.8.8 - 1.15.5
     * » Paper 1.8.8 - 1.15.5
 
 ➥ BungeeCord
-    » Default
-    » Waterfall
+    * » Default
+    * » Waterfall
 
 ### Developer
 
