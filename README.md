@@ -27,7 +27,7 @@ The cloud was developed using Maven and only supports Maven!
 
 ```xml
 
-Test
+Still in development..
 
 ```
 
