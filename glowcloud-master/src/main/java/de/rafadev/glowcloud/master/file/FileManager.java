@@ -10,6 +10,7 @@ package de.rafadev.glowcloud.master.file;
 
 import com.google.gson.JsonArray;
 import de.rafadev.glowcloud.lib.document.Document;
+import de.rafadev.glowcloud.master.main.GlowCloud;
 
 import java.io.File;
 
@@ -17,8 +18,15 @@ public class FileManager {
 
     private File settingsFile = new File("settings.json");
 
-    public FileManager() {
+    private boolean fiststart = false;
 
+    public FileManager() {
+        if(!settingsFile.exists()) {
+            fiststart = true;
+        }
+    }
+
+    public void checkAllFiles() {
         if(!settingsFile.exists()) {
             Document document = new Document();
 
@@ -30,8 +38,11 @@ public class FileManager {
             document.append("wrappers", new JsonArray());
 
             document.save(settingsFile);
+            System.out.println("\"" + settingsFile.getName() + "\" was created.");
         }
-
     }
 
+    public boolean isFistStart() {
+        return fiststart;
+    }
 }

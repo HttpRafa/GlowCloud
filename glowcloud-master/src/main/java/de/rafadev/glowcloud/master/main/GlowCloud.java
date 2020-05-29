@@ -28,6 +28,19 @@ public class GlowCloud {
         glowCloud = this;
 
         /*
+        Init FileSystem
+         */
+        fileManager = new FileManager();
+        if(fileManager.isFistStart()) {
+            System.out.println("The cloud is running for the first time.");
+            System.out.println("Creating all files...");
+            fileManager.checkAllFiles();
+            System.out.println("The Cloud is now ready to work. Thanks for using GlowCloud.");
+            Thread.sleep(1500);
+            return;
+        }
+
+        /*
         Starting LoggingService
          */
         logger = new CloudLogger();
@@ -40,7 +53,6 @@ public class GlowCloud {
         /*
         Loading all Managers
          */
-        fileManager = new FileManager();
         commandManager = new CommandManager(logger);
 
         /*
@@ -64,6 +76,10 @@ public class GlowCloud {
 
     public CommandManager getCommandManager() {
         return commandManager;
+    }
+
+    public FileManager getFileManager() {
+        return fileManager;
     }
 
     public GlowScheduler getScheduler() {
