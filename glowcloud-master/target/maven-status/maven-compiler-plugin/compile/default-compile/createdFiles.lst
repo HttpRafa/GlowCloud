@@ -19,3 +19,4 @@ de\rafadev\glowcloud\master\group\classes\CloudServerGroup.class
 de\rafadev\glowcloud\master\group\GroupManager.class
 de\rafadev\glowcloud\master\command\commands\StopCommand.class
 de\rafadev\glowcloud\master\group\setup\GroupSetupResult.class
+de\rafadev\glowcloud\master\group\setup\GroupSetup.class

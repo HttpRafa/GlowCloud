@@ -8,11 +8,13 @@ package de.rafadev.glowcloud.master.main;
 //
 //------------------------------
 
+import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
 import de.rafadev.glowcloud.master.command.CommandManager;
 import de.rafadev.glowcloud.master.command.commands.*;
 import de.rafadev.glowcloud.master.file.FileManager;
+import de.rafadev.glowcloud.master.group.GroupManager;
 
 public class GlowCloud {
 
@@ -21,6 +23,7 @@ public class GlowCloud {
 
     private CommandManager commandManager;
     private FileManager fileManager;
+    private GroupManager groupManager;
 
     private GlowScheduler scheduler;
 
@@ -37,6 +40,7 @@ public class GlowCloud {
             fileManager.checkAllFiles();
             System.out.println("The Cloud is now ready to work. Thanks for using GlowCloud.");
             Thread.sleep(1500);
+            shutdown();
             return;
         }
 
@@ -53,6 +57,7 @@ public class GlowCloud {
         /*
         Loading all Managers
          */
+        groupManager = new GroupManager();
         commandManager = new CommandManager(logger);
 
         /*
@@ -61,7 +66,7 @@ public class GlowCloud {
         commandManager.registerCommand(new StopCommand("stop", null, "Stops the GlowCloud application"));
         commandManager.registerCommand(new StopCommand("exit", null, "Stops the GlowCloud application"));
         commandManager.registerCommand(new HelpCommand("help", null, "Displays all executable commands"));
-        commandManager.registerCommand(new CreateCommand("create", "§8<§eServerGroup§7/§eWrapper§8>", "Creates a servergroup or a wrapper"));
+        commandManager.registerCommand(new CreateCommand("create", "§8<§eServerGroup§8>", "Creates a servergroup or a wrapper"));
         commandManager.registerCommand(new GroupCommand("group", "§8<§eset§8> <§emaintenance§8> §8<§evalue§8>", "Manage a servergroup"));
         commandManager.registerCommand(new StartCommand("start", "§8<§egroup§8> <§eamount§8>", "Starts server for a group"));
         commandManager.registerCommand(new ShutdownCommand("shutdown", "§8<§eServer§7/§eGroup§7/§eWrapper§8> §8<§eName§8>", "Shutdown a server or a group or a wrapper"));
@@ -84,6 +89,10 @@ public class GlowCloud {
 
     public GlowScheduler getScheduler() {
         return scheduler;
+    }
+
+    public GroupManager getGroupManager() {
+        return groupManager;
     }
 
     public CloudLogger getLogger() {
