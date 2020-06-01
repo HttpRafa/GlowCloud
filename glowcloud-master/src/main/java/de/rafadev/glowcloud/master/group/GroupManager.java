@@ -10,8 +10,14 @@ package de.rafadev.glowcloud.master.group;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
+import de.rafadev.glowcloud.lib.enums.GroupMode;
+import de.rafadev.glowcloud.lib.enums.ServerType;
+import de.rafadev.glowcloud.master.group.bukkit.CloudBukkitGroup;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
+import de.rafadev.glowcloud.master.group.proxy.CloudProxyGroup;
 import de.rafadev.glowcloud.master.group.setup.GroupSetup;
 import de.rafadev.glowcloud.master.group.setup.GroupSetupResult;
 import de.rafadev.glowcloud.master.main.GlowCloud;
@@ -51,7 +57,13 @@ public class GroupManager {
             simpleCloudServerGroup.setWrapperID(result.getWrapperID());
             simpleCloudServerGroup.setName(result.getName());
 
-            CloudServerGroup cloudServerGroup = new CloudServerGroup(simpleCloudServerGroup);
+            CloudServerGroup cloudServerGroup = null;
+            
+            if(result.getServerType() == ServerType.BUKKIT) {
+                cloudServerGroup = new CloudBukkitGroup(simpleCloudServerGroup);
+            } else if(result.getServerType() == ServerType.BUNGEECORD) {
+                cloudServerGroup = new CloudProxyGroup(simpleCloudServerGroup);
+            }
 
             inject(cloudServerGroup);
 
@@ -60,7 +72,50 @@ public class GroupManager {
                 file.createNewFile();
                 FileWriter fileWriter = new FileWriter(file);
                 Gson gson = new GsonBuilder().disableHtmlEscaping().serializeNulls().setPrettyPrinting().create();
-                fileWriter.write(gson.toJson(cloudServerGroup));
+
+                JsonObject mainObject = new JsonObject();
+
+                JsonObject groupObject = new JsonObject();
+                groupObject.addProperty("name", cloudServerGroup.getName());
+                JsonArray wrapperList = new JsonArray();
+                wrapperList.add(cloudServerGroup.getWrapperID());
+                groupObject.add("wrappers", wrapperList);
+                mainObject.add("group", groupObject);
+
+                JsonObject serverObject = new JsonObject();
+                serverObject.addProperty("memory", cloudServerGroup.getMemory());
+                serverObject.addProperty("dynamicMemory", cloudServerGroup.getDynamicMemory());
+                serverObject.addProperty("serverType", cloudServerGroup.getServerType().toString());
+                mainObject.add("server", serverObject);
+
+                JsonObject autoObject = new JsonObject();
+                autoObject.addProperty("maxServerCount", cloudServerGroup.getMaxServerCount());
+                autoObject.addProperty("minServerCount", cloudServerGroup.getMinServerCount());
+                autoObject.addProperty("newServerPercent", cloudServerGroup.getNewServerPercent());
+                mainObject.add("cloud", autoObject);
+
+                JsonObject stateObject = new JsonObject();
+                stateObject.addProperty("maintenance", cloudServerGroup.isMaintenance());
+                stateObject.addProperty("fallback", cloudServerGroup.isFallback());
+                mainObject.add("state", stateObject);
+
+                JsonObject templateObject = new JsonObject();
+                templateObject.addProperty("groupMode", cloudServerGroup.getGroupMode().toString());
+                templateObject.addProperty("defaultTemplate", "default");
+
+                JsonArray templateListArray = new JsonArray();
+
+                JsonObject defaultTemplateObject = new JsonObject();
+                defaultTemplateObject.addProperty("name", "default");
+                defaultTemplateObject.addProperty("version", "main");
+                templateListArray.add(defaultTemplateObject);
+                templateObject.add("templates", templateListArray);
+                mainObject.add("template", templateObject);
+
+                JsonObject settingsObject = new JsonObject();
+                mainObject.add("settings", settingsObject);
+
+                fileWriter.write(gson.toJson(mainObject));
                 fileWriter.flush();
                 fileWriter.close();
             } catch (IOException e) {

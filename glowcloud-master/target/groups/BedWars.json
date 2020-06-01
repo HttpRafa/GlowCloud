@@ -1,15 +1,33 @@
 {
-  "simpleCloudServerGroup": {
+  "group": {
     "name": "BedWars",
-    "wrapperID": "Wrapper-1",
-    "fallback": false,
-    "maintenance": false,
-    "serverType": "BUKKIT",
-    "groupMode": "DYNAMIC",
+    "wrappers": [
+      "Wrapper-1"
+    ]
+  },
+  "server": {
     "memory": 256,
     "dynamicMemory": 256,
-    "minServerCount": 1,
+    "serverType": "BUKKIT"
+  },
+  "cloud": {
     "maxServerCount": -1,
+    "minServerCount": 1,
     "newServerPercent": 100
-  }
+  },
+  "state": {
+    "maintenance": false,
+    "fallback": false
+  },
+  "template": {
+    "groupMode": "DYNAMIC",
+    "defaultTemplate": "default",
+    "templates": [
+      {
+        "name": "default",
+        "version": "main"
+      }
+    ]
+  },
+  "settings": {}
 }

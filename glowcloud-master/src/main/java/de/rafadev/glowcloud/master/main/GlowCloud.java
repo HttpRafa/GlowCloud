@@ -66,6 +66,7 @@ public class GlowCloud {
         commandManager.registerCommand(new StopCommand("stop", null, "Stops the GlowCloud application"));
         commandManager.registerCommand(new StopCommand("exit", null, "Stops the GlowCloud application"));
         commandManager.registerCommand(new HelpCommand("help", null, "Displays all executable commands"));
+        commandManager.registerCommand(new DebugCommand("debug", null, "Enable the DebugMode for the Cloud"));
         commandManager.registerCommand(new CreateCommand("create", "§8<§eServerGroup§8>", "Creates a servergroup or a wrapper"));
         commandManager.registerCommand(new GroupCommand("group", "§8<§eset§8> <§emaintenance§8> §8<§evalue§8>", "Manage a servergroup"));
         commandManager.registerCommand(new StartCommand("start", "§8<§egroup§8> <§eamount§8>", "Starts server for a group"));
