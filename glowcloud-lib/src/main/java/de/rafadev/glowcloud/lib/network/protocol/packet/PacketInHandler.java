@@ -9,7 +9,6 @@ package de.rafadev.glowcloud.lib.network.protocol.packet;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.document.Document;
-import de.rafadev.glowcloud.lib.network.protocol.PacketSender;
 
 public abstract class PacketInHandler {
 
