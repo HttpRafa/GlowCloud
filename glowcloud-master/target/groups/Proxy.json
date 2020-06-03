@@ -1,0 +1,63 @@
+{
+  "group": {
+    "name": "Proxy",
+    "wrappers": [
+      "Wrapper-1"
+    ]
+  },
+  "server": {
+    "memory": 256,
+    "dynamicMemory": 256,
+    "serverType": "BUNGEECORD"
+  },
+  "cloud": {
+    "maxServerCount": -1,
+    "minServerCount": 1,
+    "newServerPercent": 100
+  },
+  "state": {
+    "maintenance": false
+  },
+  "template": {
+    "groupMode": "STATIC",
+    "defaultTemplate": "default",
+    "templates": [
+      {
+        "name": "default",
+        "version": "main"
+      }
+    ]
+  },
+  "settings": {
+    "proxy": {
+      "maxPlayers": 250
+    },
+    "motd": {
+      "enabled": true,
+      "maintenance": {
+        "protocol": "§8» §cMaintenance",
+        "firstLine": " §eGlowCloud §8■ §7your Cloud§8, §7my §ework §8● §8[§e%version%§8]",
+        "secondLine": "      §8▎ §4Maintenance §8● §cI am in maintenance§8. §8▎"
+      },
+      "normal": {
+        "firstLine": " §eGlowCloud §8■ §7your Cloud§8, §7my §ework §8● §8[§e%version%§8]",
+        "secondLine": "      §8▎ §eOnline §8● §7Please configure me.§8. §8▎"
+      }
+    },
+    "tabList": {
+      "enabled": true,
+      "header": " \n§8▎ §6● §8▎ §eGlowCloud §8■ §e%online_players% §8/ §e%max_players% §8▎ §6● §8▎\n §8► §7Current server §8● §e%server% §8◄ \n ",
+      "footer": " \n §7Developer §8● §eRafaDev §8▎ §7Info §8● §eWith <3 \n "
+    },
+    "playerList": {
+      "enabled": true,
+      "list": [
+        " ",
+        "§e§lGlowCloud",
+        "§7Your Minecraft cloud.",
+        "§7developed by RafaDev with §c<3",
+        " "
+      ]
+    }
+  }
+}

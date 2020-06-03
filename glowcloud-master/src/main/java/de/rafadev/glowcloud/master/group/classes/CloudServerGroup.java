@@ -12,6 +12,8 @@ import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.lib.enums.GroupMode;
 import de.rafadev.glowcloud.lib.enums.ServerType;
 
+import java.util.List;
+
 public class CloudServerGroup {
 
     private final SimpleCloudServerGroup simpleCloudServerGroup;
@@ -28,11 +30,11 @@ public class CloudServerGroup {
         simpleCloudServerGroup.setName(name);
     }
 
-    public String getWrapperID() {
+    public List<String> getWrapperIDs() {
         return simpleCloudServerGroup.getWrapperID();
     }
 
-    public void setWrapperID(String wrapperID) {
+    public void setWrapperIDs(List<String> wrapperID) {
         simpleCloudServerGroup.setWrapperID(wrapperID);
     }
 
