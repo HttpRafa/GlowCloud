@@ -8,13 +8,11 @@ package de.rafadev.glowcloud.master.group;
 //
 //------------------------------
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.lib.enums.GroupMode;
 import de.rafadev.glowcloud.lib.enums.ServerType;
+import de.rafadev.glowcloud.lib.file.CloudReader;
 import de.rafadev.glowcloud.lib.file.CloudWriter;
 import de.rafadev.glowcloud.master.group.bukkit.CloudBukkitGroup;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
@@ -24,9 +22,7 @@ import de.rafadev.glowcloud.master.group.setup.GroupSetupResult;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +34,72 @@ public class GroupManager {
     private GroupSetup groupSetup;
 
     private List<CloudServerGroup> groups = new LinkedList<>();
+
+    public void loadGroups() {
+
+        long startTime = System.currentTimeMillis();
+
+        int loadedGroups = 0;
+
+        GlowCloud.getGlowCloud().getLogger().info("Loading all ServerGroups...");
+
+        File[] files = folder.listFiles();
+        for (File file : files) {
+
+            if(file.getName().endsWith(".json")) {
+
+                CloudReader cloudReader = new CloudReader(file);
+
+                try {
+                    JsonObject jsonObject = new JsonParser().parse(cloudReader.read()).getAsJsonObject();
+                    JsonObject groupObject = jsonObject.get("group").getAsJsonObject();
+                    JsonObject serverObject = jsonObject.get("server").getAsJsonObject();
+                    JsonObject settingsObject = jsonObject.get("settings").getAsJsonObject();
+
+                    SimpleCloudServerGroup cloudServerGroup = new SimpleCloudServerGroup();
+                    cloudServerGroup.setName(groupObject.get("name").getAsString());
+                    cloudServerGroup.setFallback(!serverObject.get("serverType").getAsString().equalsIgnoreCase("BUNGEECORD") && settingsObject.get("network").getAsJsonObject().get("fallback").getAsBoolean());
+                    cloudServerGroup.setMaintenance(jsonObject.get("state").getAsJsonObject().get("maintenance").getAsBoolean());
+                    cloudServerGroup.setServerType(ServerType.valueOf(serverObject.get("serverType").getAsString()));
+                    cloudServerGroup.setGroupMode(GroupMode.valueOf(jsonObject.get("template").getAsJsonObject().get("groupMode").getAsString()));
+                    cloudServerGroup.setMemory(serverObject.get("memory").getAsInt());
+                    cloudServerGroup.setDynamicMemory(serverObject.get("dynamicMemory").getAsInt());
+                    cloudServerGroup.setMinServerCount(jsonObject.get("cloud").getAsJsonObject().get("minServerCount").getAsInt());
+                    cloudServerGroup.setMaxServerCount(jsonObject.get("cloud").getAsJsonObject().get("maxServerCount").getAsInt());
+                    cloudServerGroup.setNewServerPercent(jsonObject.get("cloud").getAsJsonObject().get("newServerPercent").getAsInt());
+
+                    List<String> wrappers = new LinkedList<>();
+                    for (JsonElement jsonElement : groupObject.get("wrappers").getAsJsonArray()) {
+                        wrappers.add(jsonElement.getAsString());
+                    }
+                    cloudServerGroup.setWrapperID(wrappers);
+
+                    if (cloudServerGroup.getServerType() == ServerType.BUKKIT) {
+                        CloudBukkitGroup cloudBukkitGroup = new CloudBukkitGroup(cloudServerGroup);
+                        inject(cloudBukkitGroup);
+                        loadedGroups++;
+                    } else if (cloudServerGroup.getServerType() == ServerType.BUNGEECORD) {
+                        CloudProxyGroup cloudProxyGroup = new CloudProxyGroup(cloudServerGroup);
+                        inject(cloudProxyGroup);
+                        loadedGroups++;
+                    }
+
+                } catch (Exception e) {
+                    GlowCloud.getGlowCloud().getLogger().error("Can`t load group \"" + file.getName().replaceAll(".json", "") + "\"!");
+                }
+            } else {
+                GlowCloud.getGlowCloud().getLogger().error("Invalid format for " + file.getName() + " file§8!");
+            }
+        }
+
+        long time = System.currentTimeMillis() - startTime;
+        if(time > 2000) {
+            GlowCloud.getGlowCloud().getLogger().error("The loading of the groups took more than 2 second exactly " + time + " ms");
+        } else {
+            GlowCloud.getGlowCloud().getLogger().info(loadedGroups + " groups were loaded in " + time + " ms");
+        }
+
+    }
 
     public void createGroup(GroupSetupResult result) {
         if(!existGroup(result.getName())) {
