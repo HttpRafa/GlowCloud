@@ -35,6 +35,10 @@ public class GroupManager {
 
     private List<CloudServerGroup> groups = new LinkedList<>();
 
+    public void reload() {
+
+    }
+
     public void loadGroups() {
 
         long startTime = System.currentTimeMillis();
@@ -97,6 +101,12 @@ public class GroupManager {
             GlowCloud.getGlowCloud().getLogger().error("The loading of the groups took more than 2 second exactly " + time + " ms");
         } else {
             GlowCloud.getGlowCloud().getLogger().info(loadedGroups + " groups were loaded in " + time + " ms");
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
