@@ -10,12 +10,13 @@ package de.rafadev.glowcloud.modules.sign;
 
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.module.CloudModule;
+import de.rafadev.glowcloud.modules.sign.commands.SignCommand;
 
 public class SignModule extends CloudModule {
 
     @Override
     public void onLoad() {
-        GlowCloud.getGlowCloud().getLogger().info("SignModule was loaded");
+        GlowCloud.getGlowCloud().getCommandManager().registerCommand(new SignCommand("sign", null, "The command of the sign module"));
     }
 
     @Override
