@@ -40,24 +40,29 @@ public class Document implements IGlowCloudObject {
         return new Document(new JsonParser().parse(jsonReader).getAsJsonObject());
     }
 
-    public void append(String key, String value) {
+    public Document append(String key, String value) {
         data.addProperty(key, value);
+        return this;
     }
 
-    public void append(String key, Number value) {
+    public Document append(String key, Number value) {
         data.addProperty(key, value);
+        return this;
     }
 
-    public void append(String key, boolean value) {
+    public Document append(String key, boolean value) {
         data.addProperty(key, value);
+        return this;
     }
 
-    public void append(String key, JsonElement value) {
+    public Document append(String key, JsonElement value) {
         data.add(key, value);
+        return this;
     }
 
-    public void append(String key, Document value) {
+    public Document append(String key, Document value) {
         data.add(key, value.data);
+        return this;
     }
 
     public String getAsString(String key) {
@@ -84,18 +89,25 @@ public class Document implements IGlowCloudObject {
         data.remove(key);
     }
 
+    public void setData(JsonObject data) {
+        this.data = data;
+    }
+
     public void save(File file) {
-        try {
+        try(Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
             if(!file.exists()) {
                 file.createNewFile();
             }
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write((new GsonBuilder().disableHtmlEscaping().serializeNulls().setPrettyPrinting().create()).toJson(data));
-            fileWriter.flush();
-            fileWriter.close();
+
+            writer.write((new GsonBuilder().disableHtmlEscaping().serializeNulls().setPrettyPrinting().create()).toJson(data));
+            writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public JsonObject getData() {
+        return data;
     }
 
     @Override

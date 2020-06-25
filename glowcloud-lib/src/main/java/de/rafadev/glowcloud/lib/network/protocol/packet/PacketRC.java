@@ -10,7 +10,7 @@ package de.rafadev.glowcloud.lib.network.protocol.packet;
 
 public class PacketRC {
 
-    public static long DEBUG = -999;
+    public static long DEBUG = -9999;
     public static long MAIN = 0;
     public static long SERVER_MANAGING = 10000;
     public static long MODULE = 9999999;

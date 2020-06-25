@@ -23,4 +23,8 @@ public class NetworkUtils {
         return Epoll.isAvailable() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
     }
 
+    public static boolean isEpollAvailable() {
+        return Epoll.isAvailable();
+    }
+
 }

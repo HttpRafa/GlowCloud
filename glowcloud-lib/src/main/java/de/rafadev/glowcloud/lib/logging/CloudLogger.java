@@ -41,6 +41,39 @@ public class CloudLogger {
         exeptionHandler.handle(exception);
     }
 
+    public void overrideLine(int id, Object object) {
+        try {
+            if(id == 1) {
+                SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+                Date currentTime = new Date();
+                String formatstr = ConsoleColor.toColouredString('§', "§8") + "[ " + ConsoleColor.toColouredString('§', "§e") + formatter.format(currentTime) + ConsoleColor.toColouredString('§', "§8") +" ]";
+                consoleReader.print(ConsoleReader.RESET_LINE + formatstr + ConsoleColor.toColouredString('§', "§7") + " INFO " + ConsoleColor.toColouredString('§', "§8") + "» " + ConsoleColor.toColouredString('§', "§7") + ConsoleColor.toColouredString('§', object.toString() + "§r"));
+            }
+            //consoleReader.drawLine();
+            consoleReader.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void clearConsole() {
+        try {
+            consoleReader.clearScreen();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void nextLine() {
+        try {
+            consoleReader.print("\n");
+            consoleReader.drawLine();
+            consoleReader.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void info(Object obj) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         Date currentTime = new Date();
