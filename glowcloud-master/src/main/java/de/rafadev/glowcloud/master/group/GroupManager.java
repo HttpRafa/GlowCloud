@@ -203,7 +203,7 @@ public class GroupManager {
 
                 JsonObject defaultTemplateObject = new JsonObject();
                 defaultTemplateObject.addProperty("name", "default");
-                defaultTemplateObject.addProperty("version", "main");
+                defaultTemplateObject.addProperty("version", cloudServerGroup.getServerType().toString().toLowerCase());
                 templateListArray.add(defaultTemplateObject);
                 templateObject.add("templates", templateListArray);
                 mainObject.add("template", templateObject);
@@ -275,7 +275,7 @@ public class GroupManager {
     public void inject(CloudServerGroup serverGroup) {
 
         groups.add(serverGroup);
-        GlowCloud.getGlowCloud().getLogger().info("Loading ServerGroup " + serverGroup.getName() + "@" + (serverGroup.getWrapperIDs().size() > 1 ? serverGroup.getWrapperIDs().toString() : serverGroup.getWrapperIDs().get(0)) + " with " + serverGroup.getDynamicMemory() + "MB");
+        GlowCloud.getGlowCloud().getLogger().info("Loading ServerGroup §e" + serverGroup.getName() + "§8@§6" + (serverGroup.getWrapperIDs().size() > 1 ? serverGroup.getWrapperIDs().toString() : serverGroup.getWrapperIDs().get(0)) + " §7with §e" + serverGroup.getDynamicMemory() + " §7MB");
 
     }
 

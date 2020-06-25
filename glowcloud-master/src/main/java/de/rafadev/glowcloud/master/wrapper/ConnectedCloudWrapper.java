@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.master.wrapper;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
+import de.rafadev.glowcloud.lib.network.protocol.packet.PacketSender;
 import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
 
 public class ConnectedCloudWrapper extends CloudWrapper {

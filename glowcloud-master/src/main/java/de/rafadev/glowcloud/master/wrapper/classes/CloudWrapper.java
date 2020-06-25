@@ -8,7 +8,9 @@ package de.rafadev.glowcloud.master.wrapper.classes;
 //
 //------------------------------
 
-public class CloudWrapper {
+import de.rafadev.glowcloud.lib.network.protocol.packet.PacketSender;
+
+public class CloudWrapper extends PacketSender {
 
     private String id;
     private String host;

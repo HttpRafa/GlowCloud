@@ -1,0 +1,37 @@
+{
+  "group": {
+    "name": "Bau-Server",
+    "wrappers": [
+      "Wrapper-1"
+    ]
+  },
+  "server": {
+    "memory": 256,
+    "dynamicMemory": 256,
+    "serverType": "BUKKIT"
+  },
+  "cloud": {
+    "maxServerCount": -1,
+    "minServerCount": 1,
+    "newServerPercent": 100
+  },
+  "state": {
+    "maintenance": false
+  },
+  "template": {
+    "groupMode": "STATIC",
+    "defaultTemplate": "default",
+    "templates": [
+      {
+        "name": "default",
+        "version": "main"
+      }
+    ]
+  },
+  "settings": {
+    "network": {
+      "fallback": false,
+      "fallback-permission": ""
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "prefix": "§e○ Cloud §8» §7",
+  "color": "§e",
+  "kick-maintenance": "§cThe Network is currently in maintenance mode§8.",
+  "servergroup-maintenance": "§cThe group is in maintenance§8.",
+  "full-join": "§cThe Network is full§8!",
+  "no-original-proxy": "§cPlease connect using the original proxy from GlowCloud§8!",
+  "no-hub": "§cNo hub server was found, please wait§8.",
+  "notify-server-add": "§7The server §8(§e%server%§8) §7is §a§lstarting §7now§8...",
+  "notify-server-remove": "§7The server §8(§e%server%§8) §7is now §c§lstopping§8!",
+  "already-hub": "§cYou are already connected to a hub server§8."
+}

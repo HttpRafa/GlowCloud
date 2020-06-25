@@ -8,8 +8,10 @@ package de.rafadev.glowcloud.master.main;
 //
 //------------------------------
 
+import de.rafadev.glowcloud.lib.downloader.URLDownloader;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
+import de.rafadev.glowcloud.lib.logging.ProcessBar;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
 import de.rafadev.glowcloud.master.command.CommandManager;
@@ -20,6 +22,7 @@ import de.rafadev.glowcloud.master.module.manager.CloudModuleManager;
 import de.rafadev.glowcloud.master.network.manager.NetworkManager;
 
 import java.io.File;
+import java.io.IOException;
 
 public class GlowCloud {
 
@@ -43,13 +46,14 @@ public class GlowCloud {
         Init FileSystem
          */
         fileManager = new FileManager();
-        if(fileManager.isFistStart()) {
+        if(fileManager.isFirstStart()) {
             System.out.println("The cloud is running for the first time.");
             System.out.println("Creating all files...");
             fileManager.checkAllFiles();
             System.out.println("The Cloud is now ready to work. Thanks for using GlowCloud.");
             Thread.sleep(1500);
-            shutdown();
+            //shutdown();
+            System.exit(0);
             return;
         }
 
@@ -76,9 +80,10 @@ public class GlowCloud {
          */
         commandManager.registerCommand(new StopCommand("stop", null, "Stops the GlowCloud application"));
         commandManager.registerCommand(new StopCommand("exit", null, "Stops the GlowCloud application"));
-        commandManager.registerCommand(new ReloadCommand("reload", "§8<§eall, configs§8>", "Reload the GlowCloud application"));
         commandManager.registerCommand(new HelpCommand("help", null, "Displays all executable commands"));
         commandManager.registerCommand(new DebugCommand("debug", null, "Enable the DebugMode for the Cloud"));
+        commandManager.registerCommand(new ClearCommand("clear", null, "Deletes the displayed console"));
+        commandManager.registerCommand(new ReloadCommand("reload", "§8<§eall, configs§8>", "Reload the GlowCloud application"));
         commandManager.registerCommand(new CreateCommand("create", "§8<§eServerGroup§8>", "Creates a servergroup or a wrapper"));
         commandManager.registerCommand(new GroupCommand("group", "§8<§eset§8> <§emaintenance§8> §8<§evalue§8>", "Manage a servergroup"));
         commandManager.registerCommand(new StartCommand("start", "§8<§egroup§8> <§eamount§8>", "Starts server for a group"));
@@ -151,7 +156,7 @@ public class GlowCloud {
     }
 
     public void exit() {
-        if(!fileManager.isFistStart()) {
+        if(!fileManager.isFirstStart()) {
             logger.info("Cloud is shutting down...");
         }
     }
@@ -166,6 +171,14 @@ public class GlowCloud {
 
     public GlowScheduler getScheduler() {
         return scheduler;
+    }
+
+    public NetworkManager getNetworkManager() {
+        return networkManager;
+    }
+
+    public CloudModuleManager getModuleManager() {
+        return moduleManager;
     }
 
     public GroupManager getGroupManager() {
