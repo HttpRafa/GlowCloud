@@ -14,7 +14,7 @@ For more info about the Cloud please visit our spigotmc.org page
 ### Version Support
 
 * ➥ Spigot
-    * » Default 1.8.8 - 1.15.5
+    * » Default 1.8.8 - 1.16.1
     * » Taco 1.8.8 - 1.15.5
     * » Paper 1.8.8 - 1.15.5
 
