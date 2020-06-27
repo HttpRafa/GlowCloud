@@ -26,7 +26,7 @@ public class URLDownloader {
         conn.connect();
         final InputStream is = new BufferedInputStream(conn.getInputStream());
 
-        long dateKB = conn.getHeaderFieldLong("Content-Length", is.available());
+        long dataKB = conn.getHeaderFieldLong("Content-Length", is.available());
         long downloadedBytes = 0;
         final int[] downloadBytesOn1Sek = {0};
         final int[] downloadBytesPer1Sek = {0};
@@ -48,7 +48,7 @@ public class URLDownloader {
             downloadedBytes += 1024;
             downloadBytesOn1Sek[0]++;
             os.write(chunk, 0, chunkSize);
-            new ProcessBar(logger, downloadBytesPer1Sek[0], dateKB, downloadedBytes);
+            new ProcessBar(logger, downloadBytesPer1Sek[0], dataKB, downloadedBytes);
         }
         os.flush(); // Necessary for Java < 6
         os.close();
