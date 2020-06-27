@@ -18,6 +18,7 @@ import de.rafadev.glowcloud.master.group.GroupManager;
 import de.rafadev.glowcloud.master.key.KeyManager;
 import de.rafadev.glowcloud.master.module.manager.CloudModuleManager;
 import de.rafadev.glowcloud.master.network.manager.NetworkManager;
+import de.rafadev.glowcloud.master.wrapper.WrapperManager;
 
 public class GlowCloud {
 
@@ -32,6 +33,7 @@ public class GlowCloud {
     private NetworkManager networkManager;
     private CloudModuleManager moduleManager;
     private KeyManager keyManager;
+    private WrapperManager wrapperManager;
 
     private GlowScheduler scheduler;
 
@@ -69,6 +71,7 @@ public class GlowCloud {
         /*
         Loading all Managers
          */
+        wrapperManager = new WrapperManager();
         groupManager = new GroupManager();
         commandManager = new CommandManager(logger);
         moduleManager = new CloudModuleManager();
@@ -106,6 +109,11 @@ public class GlowCloud {
          */
         networkManager = new NetworkManager();
         networkManager.startNetworkServer(new NetworkAddress("127.0.0.1", fileManager.getConfig().get("cloud").getAsJsonObject().get("port").getAsInt()));
+
+        /*
+        Load all Wrappers
+         */
+        wrapperManager.loadWrappers();
 
         /*
          Load all ServerGroup
@@ -202,6 +210,10 @@ public class GlowCloud {
 
     public KeyManager getKeyManager() {
         return keyManager;
+    }
+
+    public WrapperManager getWrapperManager() {
+        return wrapperManager;
     }
 
     public CloudModuleManager getModuleManager() {
