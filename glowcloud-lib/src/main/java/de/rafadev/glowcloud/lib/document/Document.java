@@ -89,6 +89,10 @@ public class Document implements IGlowCloudObject {
         data.remove(key);
     }
 
+    public boolean has(String key) {
+        return data.has(key);
+    }
+
     public void setData(JsonObject data) {
         this.data = data;
     }
