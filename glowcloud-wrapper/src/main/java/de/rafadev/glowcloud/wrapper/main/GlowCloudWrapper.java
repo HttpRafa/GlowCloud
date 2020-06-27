@@ -13,9 +13,11 @@ import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.auth.NetworkAuthentication;
 import de.rafadev.glowcloud.lib.network.auth.types.AuthServiceType;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
+import de.rafadev.glowcloud.wrapper.command.CommandManager;
+import de.rafadev.glowcloud.wrapper.command.commands.StopCommand;
 import de.rafadev.glowcloud.wrapper.file.FileManager;
+import de.rafadev.glowcloud.wrapper.key.KeyManager;
 import de.rafadev.glowcloud.wrapper.network.manager.NetworkManager;
-import de.rafadev.glowcloud.wrapper.network.packet.handler.DefaultHandler;
 import de.rafadev.glowcloud.wrapper.version.VersionManager;
 
 import java.io.IOException;
@@ -27,6 +29,8 @@ public class GlowCloudWrapper {
     private FileManager fileManager;
     private VersionManager versionManager;
     private NetworkManager networkManager;
+    private KeyManager keyManager;
+    private CommandManager commandManager;
 
     private CloudLogger logger;
     private GlowScheduler scheduler;
@@ -53,6 +57,7 @@ public class GlowCloudWrapper {
         Starting LoggingService
          */
         logger = new CloudLogger();
+        commandManager = new CommandManager();
 
         /*
         Loading SchedulerService
@@ -62,7 +67,10 @@ public class GlowCloudWrapper {
         /*
         Load datas
          */
+        fileManager.preCheckFiles();
         versionManager = new VersionManager();
+        keyManager = new KeyManager();
+
 
         /*
         Check ID and Versions
@@ -70,15 +78,22 @@ public class GlowCloudWrapper {
         versionManager.checkVersions();
 
         /*
+        Register all Commands
+         */
+        commandManager.registerCommand(new StopCommand("stop", null, "Stops the GlowCloud Wrapper application"));
+        commandManager.registerCommand(new StopCommand("exit", null, "Stops the GlowCloud Wrapper application"));
+
+        /*
         Loading all Managers
          */
         networkManager = new NetworkManager(new NetworkAddress("127.0.0.1", 6360));
+        commandManager.startReader(logger);
 
         // Create a Auth
-        NetworkAuthentication networkAuthentication = new NetworkAuthentication("Wrapper-1", AuthServiceType.WRAPPER, "Test");
+        NetworkAuthentication networkAuthentication = new NetworkAuthentication("Wrapper-1", AuthServiceType.WRAPPER, keyManager.getConnectionKey());
 
         // Start the Connection
-        networkManager.getNetworkConnection().tryConnect(networkAuthentication, new DefaultHandler(), logger);
+        networkManager.start(networkAuthentication, scheduler);
 
     }
 
@@ -88,8 +103,36 @@ public class GlowCloudWrapper {
 
     public void exit() {
         if(!fileManager.isFirstStart()) {
+            networkManager.shutdown();
             logger.info("Cloud Wrapper is shutting down...");
+
+            logger.overrideLine(1, "Closing the connection to the master. §8[§cClosing§8]");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(networkManager != null && networkManager.getNetworkConnection() != null && networkManager.getNetworkConnection().shutdown()) {
+                logger.overrideLine(1, "Closing the connection to the master. §8[§aClosed§8] ");
+                logger.nextLine();
+            } else {
+                logger.overrideLine(1, "Closing the connection to the master. §8[§4Failed§8] ");
+                logger.nextLine();
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            logger.info("Stopping all running server... §8[§e1/10§8]");
+
+            logger.info("§7Thanks for using §eGlowCloud§8.");
+
         }
+    }
+
+    public CommandManager getCommandManager() {
+        return commandManager;
     }
 
     public CloudLogger getLogger() {
@@ -98,6 +141,22 @@ public class GlowCloudWrapper {
 
     public GlowScheduler getScheduler() {
         return scheduler;
+    }
+
+    public KeyManager getKeyManager() {
+        return keyManager;
+    }
+
+    public NetworkManager getNetworkManager() {
+        return networkManager;
+    }
+
+    public FileManager getFileManager() {
+        return fileManager;
+    }
+
+    public VersionManager getVersionManager() {
+        return versionManager;
     }
 
     public Runtime getRuntime() {
