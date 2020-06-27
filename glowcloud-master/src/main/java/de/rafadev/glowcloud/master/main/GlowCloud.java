@@ -8,32 +8,30 @@ package de.rafadev.glowcloud.master.main;
 //
 //------------------------------
 
-import de.rafadev.glowcloud.lib.downloader.URLDownloader;
-import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
-import de.rafadev.glowcloud.lib.logging.ProcessBar;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
 import de.rafadev.glowcloud.master.command.CommandManager;
 import de.rafadev.glowcloud.master.command.commands.*;
 import de.rafadev.glowcloud.master.file.FileManager;
 import de.rafadev.glowcloud.master.group.GroupManager;
+import de.rafadev.glowcloud.master.key.KeyManager;
 import de.rafadev.glowcloud.master.module.manager.CloudModuleManager;
 import de.rafadev.glowcloud.master.network.manager.NetworkManager;
-
-import java.io.File;
-import java.io.IOException;
 
 public class GlowCloud {
 
     private static GlowCloud glowCloud;
     private CloudLogger logger;
 
+    private boolean started = false;
+
     private CommandManager commandManager;
     private FileManager fileManager;
     private GroupManager groupManager;
     private NetworkManager networkManager;
     private CloudModuleManager moduleManager;
+    private KeyManager keyManager;
 
     private GlowScheduler scheduler;
 
@@ -74,6 +72,8 @@ public class GlowCloud {
         groupManager = new GroupManager();
         commandManager = new CommandManager(logger);
         moduleManager = new CloudModuleManager();
+        keyManager = new KeyManager();
+
 
         /*
         Register All Command
@@ -120,6 +120,7 @@ public class GlowCloud {
         /*
          Start Cloud main actions
          */
+        started = true;
         logger.info("The cloud was started in §e" + (System.currentTimeMillis() - startTime) + " §7ms§8.");
         logger.info("For help, write §8\"§ehelp§8\".");
     }
@@ -158,6 +159,28 @@ public class GlowCloud {
     public void exit() {
         if(!fileManager.isFirstStart()) {
             logger.info("Cloud is shutting down...");
+
+            logger.overrideLine(1, "Closing the NetworkServer... §8[§cClosing§8]");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if(networkManager != null && networkManager.getNetworkServer() != null && networkManager.getNetworkServer().shutdown()) {
+                logger.overrideLine(1, "Closing the NetworkServer... §8[§aClosed§8] ");
+            } else {
+                logger.overrideLine(1, "Closing the NetworkServer... §8[§4Failed§8] ");
+            }
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            logger.info("§7Thanks for using §eGlowCloud§8.");
         }
     }
 
@@ -177,6 +200,10 @@ public class GlowCloud {
         return networkManager;
     }
 
+    public KeyManager getKeyManager() {
+        return keyManager;
+    }
+
     public CloudModuleManager getModuleManager() {
         return moduleManager;
     }
@@ -187,6 +214,10 @@ public class GlowCloud {
 
     public CloudLogger getLogger() {
         return logger;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public static void run(String[] args) throws Exception {
