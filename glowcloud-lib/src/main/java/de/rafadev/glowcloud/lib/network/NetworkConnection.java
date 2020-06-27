@@ -20,9 +20,12 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class NetworkConnection implements IGlowCloudObject {
 
-    private EventLoopGroup eventLoopGroup = NetworkUtils.eventLoopGroup();
+    private EventLoopGroup eventLoopGroup;
     private ChannelConnection channelConnection;
 
     private PacketManager packetManager = new PacketManager();
@@ -41,6 +44,9 @@ public class NetworkConnection implements IGlowCloudObject {
             @Override
             public void run() {
                 cloudLogger.info("Try to connect the host §8[§e" + networkAddress.toString() + "§8]...");
+
+                eventLoopGroup = NetworkUtils.eventLoopGroup();
+
                 try {
                     Bootstrap b = new Bootstrap();
                     b.group(eventLoopGroup);
@@ -62,16 +68,27 @@ public class NetworkConnection implements IGlowCloudObject {
 
                                             cloudLogger.info("The connection to the host was successfully §acreated§8.");
                                             channelConnection = new ChannelConnection(channelFuture.channel());
-                                            cloudLogger.info("Try to auth the connection on the Server§8.");
+                                            cloudLogger.info("Try to auth the connection on the server§8.");
                                             packetManager.writePacket(channelConnection, new PacketOutAuth(networkAuthentication));
+
+                                            Timer timer = new Timer();
+                                            timer.schedule(new TimerTask() {
+                                                @Override
+                                                public void run() {
+                                                    if(!channelFuture.channel().isActive()) {
+                                                        cloudLogger.error("§4The connection was killed§8.");
+                                                    }
+                                                }
+                                            }, 1000);
 
                                         } else {
 
                                             channelConnection = null;
                                             if(cloudLogger != null) {
                                                 cloudLogger.error("Can`t connect to the NetworkAddress§8[§c" + networkAddress.getHost() + ":" + networkAddress.getPort() + "§8]");
-                                                cloudLogger.error("This is the try §8[§4" + trys + "§8]");
+                                                cloudLogger.error("This is the try §8» §4" + trys);
                                             }
+                                            eventLoopGroup.shutdownGracefully();
 
                                         }
                                     }
@@ -82,16 +99,36 @@ public class NetworkConnection implements IGlowCloudObject {
                         channelConnection = null;
                         if(cloudLogger != null) {
                             cloudLogger.error("Can`t connect to the NetworkAddress§8[§c" + networkAddress.getHost() + ":" + networkAddress.getPort() + "§8]");
-                            cloudLogger.error("This is the try §8[§4" + trys + "§8]");
+                            cloudLogger.error("This is the try §8» §4" + trys);
                         }
+
+                        eventLoopGroup.shutdownGracefully();
 
                     }
                 } finally {
+
+                    channelConnection = null;
+
                     eventLoopGroup.shutdownGracefully();
                 }
             }
         }).start();
 
+    }
+
+    public boolean shutdown() {
+
+        if(eventLoopGroup != null) {
+            eventLoopGroup.shutdownGracefully();
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public boolean isActive() {
+        return channelConnection != null;
     }
 
     public ChannelConnection getChannelConnection() {
