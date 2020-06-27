@@ -40,7 +40,7 @@ public class KeyManager {
                     document.delete("key");
                 }
 
-                jsonArray.add(new Random().nextInt(40000));
+                jsonArray.add(new Random().nextInt(9999));
 
                 document.append("key", jsonArray);
 
