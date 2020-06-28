@@ -30,11 +30,11 @@ public class CloudServerGroup {
         simpleCloudServerGroup.setName(name);
     }
 
-    public List<String> getWrapperIDs() {
+    public String getWrapperID() {
         return simpleCloudServerGroup.getWrapperID();
     }
 
-    public void setWrapperIDs(List<String> wrapperID) {
+    public void setWrapperID(String wrapperID) {
         simpleCloudServerGroup.setWrapperID(wrapperID);
     }
 
@@ -108,6 +108,10 @@ public class CloudServerGroup {
 
     public void setNewServerPercent(int newServerPercent) {
         simpleCloudServerGroup.setNewServerPercent(newServerPercent);
+    }
+
+    public SimpleCloudServerGroup toSimple() {
+        return simpleCloudServerGroup;
     }
 
 }
