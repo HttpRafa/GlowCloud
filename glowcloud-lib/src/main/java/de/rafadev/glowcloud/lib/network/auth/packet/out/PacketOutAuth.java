@@ -23,4 +23,9 @@ public class PacketOutAuth extends Packet {
     public PacketOutAuth(NetworkAuthentication authentication) {
         super(PacketRC.MAIN - 1, UUID.randomUUID(), new Document().append("auth", new JsonParser().parse(new Gson().toJson(authentication))));
     }
+
+    public PacketOutAuth(NetworkAuthentication authentication, JsonObject extraData) {
+        super(PacketRC.MAIN - 1, UUID.randomUUID(), new Document().append("auth", new JsonParser().parse(new Gson().toJson(authentication))).append("extra", extraData));
+    }
+
 }
