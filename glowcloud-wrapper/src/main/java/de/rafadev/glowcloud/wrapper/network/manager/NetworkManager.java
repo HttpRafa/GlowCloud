@@ -8,6 +8,7 @@ package de.rafadev.glowcloud.wrapper.network.manager;
 //
 //------------------------------
 
+import com.google.gson.JsonObject;
 import de.rafadev.glowcloud.lib.network.NetworkConnection;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.auth.NetworkAuthentication;
@@ -27,13 +28,17 @@ public class NetworkManager {
     }
 
     public void start(NetworkAuthentication networkAuthentication, GlowScheduler scheduler) {
-        this.getNetworkConnection().tryConnect(networkAuthentication, new DefaultHandler(), GlowCloudWrapper.getGlowCloud().getLogger());
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("heap", 1000);
+
+        this.getNetworkConnection().tryConnect(networkAuthentication, new DefaultHandler(), GlowCloudWrapper.getGlowCloud().getLogger(), jsonObject);
 
         TaskID = scheduler.runRepeatingTask(new Runnable() {
             @Override
             public void run() {
                 if(!networkConnection.isActive() && checkConnection) {
-                    networkConnection.tryConnect(networkAuthentication, new DefaultHandler(), GlowCloudWrapper.getGlowCloud().getLogger());
+                    networkConnection.tryConnect(networkAuthentication, new DefaultHandler(), GlowCloudWrapper.getGlowCloud().getLogger(), jsonObject);
                 }
             }
         }, 1000, 5000);
