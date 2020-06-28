@@ -17,6 +17,7 @@ import de.rafadev.glowcloud.lib.network.auth.types.AuthServiceType;
 import de.rafadev.glowcloud.lib.network.protocol.packet.Packet;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketRC;
 import de.rafadev.glowcloud.master.main.GlowCloud;
+import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -46,6 +47,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
                         if(GlowCloud.getGlowCloud().getWrapperManager().isRegistered(authentication.getServiceID())) {
                             if(GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
                                 GlowCloud.getGlowCloud().getLogger().info("The Wrapper §e" + authentication.getServiceID() + " §7is now §aconnected§8.");
+                                GlowCloud.getGlowCloud().getWrapperManager().handleConnection((ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(authentication.getServiceID()));
                             }
                         } else {
 
@@ -53,6 +55,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
                             GlowCloud.getGlowCloud().getWrapperManager().registerWrapper(authentication.getServiceID(), channelConnection.getChannel().remoteAddress().toString().split(":")[0].replaceAll("/", ""), packet.getDocument().get("extra").getAsJsonObject().get("heap").getAsInt());
                             if(GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
                                 GlowCloud.getGlowCloud().getLogger().info("The Wrapper §e" + authentication.getServiceID() + " §7is now §aconnected§8.");
+                                GlowCloud.getGlowCloud().getWrapperManager().handleConnection((ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(authentication.getServiceID()));
                             }
                         }
                     } else {
