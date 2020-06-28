@@ -17,7 +17,7 @@ import java.util.List;
 public class SimpleCloudServerGroup implements IGlowCloudObject {
 
     private String name;
-    private List<String> wrapperID;
+    private String wrapperID;
 
     private boolean fallback;
     private boolean maintenance;
@@ -31,7 +31,7 @@ public class SimpleCloudServerGroup implements IGlowCloudObject {
     private int maxServerCount;
     private int newServerPercent;
 
-    public SimpleCloudServerGroup(String name, List<String> wrapperID, boolean fallback, boolean maintenance, ServerType serverType, GroupMode groupMode, int memory, int dynamicMemory, int minServerCount, int maxServerCount, int newServerPercent) {
+    public SimpleCloudServerGroup(String name, String wrapperID, boolean fallback, boolean maintenance, ServerType serverType, GroupMode groupMode, int memory, int dynamicMemory, int minServerCount, int maxServerCount, int newServerPercent) {
         this.name = name;
         this.wrapperID = wrapperID;
         this.fallback = fallback;
@@ -55,11 +55,11 @@ public class SimpleCloudServerGroup implements IGlowCloudObject {
         this.name = name;
     }
 
-    public List<String> getWrapperID() {
+    public String getWrapperID() {
         return wrapperID;
     }
 
-    public void setWrapperID(List<String> wrapperID) {
+    public void setWrapperID(String wrapperID) {
         this.wrapperID = wrapperID;
     }
 
