@@ -9,9 +9,11 @@ package de.rafadev.glowcloud.master.network.server;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
+import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketManager;
 import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
+import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.network.auth.GlowCloudClientAuth;
 import io.netty.bootstrap.ServerBootstrap;
@@ -25,10 +27,11 @@ public class NetworkServer implements IGlowCloudObject {
     private NetworkAddress networkAddress;
     private EventLoopGroup eventLoopGroup = NetworkUtils.eventLoopGroup();
 
-    private PacketManager packetManager = new PacketManager();
+    private PacketManager packetManager;
 
-    public NetworkServer(NetworkAddress networkAddress) {
+    public NetworkServer(NetworkAddress networkAddress, CloudLogger cloudLogger) {
         this.networkAddress = networkAddress;
+        this.packetManager = new PacketManager(cloudLogger);
     }
 
     public void start() {
@@ -49,8 +52,15 @@ public class NetworkServer implements IGlowCloudObject {
                                      */
                                     @Override
                                     public void initChannel(Channel channel) throws Exception {
-                                        GlowCloud.getGlowCloud().getLogger().info("A new connection§8[§e" + channel.remoteAddress().toString() + "§8] §7is §eestablished§8...");
-                                        channel.pipeline().addLast("GlowCloudAuthHandler", new GlowCloudClientAuth());
+
+                                        GlowCloud.getGlowCloud().getLogger().debug("§bClient§8[§7" + channel.remoteAddress().toString() + "§8] §7--> §bChannelInitializer");
+
+                                        if(GlowCloud.getGlowCloud().isStarted()) {
+                                            GlowCloud.getGlowCloud().getLogger().info("A new connection§8[§e" + channel.remoteAddress().toString() + "§8] §7is §eestablished§8...");
+                                            channel.pipeline().addLast("GlowCloudAuthHandler", new GlowCloudClientAuth());
+                                        } else {
+                                            channel.close();
+                                        }
                                     }
 
                                 })
@@ -104,9 +114,12 @@ public class NetworkServer implements IGlowCloudObject {
 
     }
 
-    public void shutdown() {
+    public boolean shutdown() {
         if(eventLoopGroup != null) {
             eventLoopGroup.shutdownGracefully();
+            return true;
+        } else {
+            return false;
         }
     }
 
