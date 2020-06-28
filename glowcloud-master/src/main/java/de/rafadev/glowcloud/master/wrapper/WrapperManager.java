@@ -14,14 +14,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.rafadev.glowcloud.lib.document.Document;
 import de.rafadev.glowcloud.lib.file.CloudReader;
-import de.rafadev.glowcloud.lib.file.CloudWriter;
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
+import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
+import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
+import de.rafadev.glowcloud.master.wrapper.classes.OfflineCloudWrapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,6 +110,17 @@ public class WrapperManager {
         }
 
         return false;
+
+    }
+
+    public void handleConnection(ConnectedCloudWrapper cloudWrapper) {
+
+        List<CloudServerGroup> wrapperGroups = GlowCloud.getGlowCloud().getGroupManager().getGroups().stream().filter(item -> item.getWrapperID().equals(cloudWrapper.getId())).collect(Collectors.toList());
+
+        GlowCloud.getGlowCloud().getLogger().debug("Starting all server for the wrapper §b" + cloudWrapper.getId() + "§8.");
+        for (CloudServerGroup group : wrapperGroups) {
+            GlowCloud.getGlowCloud().getServerManager().checkGroup(group);
+        }
 
     }
 
