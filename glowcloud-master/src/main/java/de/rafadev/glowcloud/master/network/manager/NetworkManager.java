@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.master.network.manager;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
+import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.network.server.NetworkServer;
 
 import java.net.NetworkInterface;
@@ -22,7 +23,7 @@ public class NetworkManager {
     }
 
     public void startNetworkServer(NetworkAddress networkAddress) {
-        networkServer = new NetworkServer(networkAddress);
+        networkServer = new NetworkServer(networkAddress, GlowCloud.getGlowCloud().getLogger());
         networkServer.start();
     }
 
