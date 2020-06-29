@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.master.network.packet.out;
 //------------------------------
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import de.rafadev.glowcloud.lib.document.Document;
 import de.rafadev.glowcloud.lib.network.protocol.packet.Packet;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketRC;
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class PacketOutStartCloudServer extends Packet {
 
     public PacketOutStartCloudServer(QueueCloudServer cloudServer) {
-        super(PacketRC.MAIN + 10, UUID.randomUUID(), new Document().append("cloudServer", new Gson().toJson(cloudServer)));
+        super(PacketRC.MAIN + 10, UUID.randomUUID(), new Document().append("cloudServer", new JsonParser().parse(new Gson().toJson(cloudServer))));
     }
 
 }
