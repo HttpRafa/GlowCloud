@@ -8,15 +8,16 @@ package de.rafadev.glowcloud.wrapper.server;
 //
 //------------------------------
 
-import com.google.gson.Gson;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
 import de.rafadev.glowcloud.lib.enums.ServerType;
+import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
 import de.rafadev.glowcloud.wrapper.main.GlowCloudWrapper;
+import de.rafadev.glowcloud.wrapper.network.packet.out.PacketOutRegisterServer;
+import de.rafadev.glowcloud.wrapper.network.packet.out.PacketOutUnRegisterServer;
 import de.rafadev.glowcloud.wrapper.queue.CloudServerQueue;
 import de.rafadev.glowcloud.wrapper.server.classes.CloudBukkitServer;
 import de.rafadev.glowcloud.wrapper.server.classes.CloudProxyServer;
 import de.rafadev.glowcloud.wrapper.server.classes.QueueCloudServer;
-import javafx.scene.effect.Glow;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -106,22 +107,16 @@ public class ServerManager {
 
             }
 
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            NetworkUtils.sleep(500);
 
         }
 
 
         for (CloudServer server : servers) {
             unRegister(server);
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+            NetworkUtils.sleep(200);
+
         }
 
     }
@@ -148,11 +143,7 @@ public class ServerManager {
 
             }
 
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            NetworkUtils.sleep(500);
 
             GlowCloudWrapper.getGlowCloud().getLogger().overrideLine(1, "Stopping all running server... §8[§e" + (onlineCount - servers.size()) + "§8/§e" + onlineCount + "§8]");
 
@@ -165,11 +156,9 @@ public class ServerManager {
 
         for (CloudServer server : servers) {
             unRegister(server);
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+            NetworkUtils.sleep(200);
+
         }
 
     }
@@ -181,6 +170,9 @@ public class ServerManager {
     public void register(CloudServer cloudServer) {
 
         servers.add(cloudServer);
+
+        GlowCloudWrapper.getGlowCloud().getNetworkManager().getNetworkConnection().getPacketManager().writePacket(GlowCloudWrapper.getGlowCloud().getNetworkManager().getNetworkConnection().getChannelConnection(), new PacketOutRegisterServer(cloudServer));
+
         GlowCloudWrapper.getGlowCloud().getLogger().info("§7The server §e" + cloudServer.getServiceID() + " §7is now registered in §eGlow§6Cloud");
 
     }
@@ -188,6 +180,9 @@ public class ServerManager {
     public void unRegister(CloudServer cloudServer) {
 
         servers.remove(cloudServer);
+
+        GlowCloudWrapper.getGlowCloud().getNetworkManager().getNetworkConnection().getPacketManager().writePacket(GlowCloudWrapper.getGlowCloud().getNetworkManager().getNetworkConnection().getChannelConnection(), new PacketOutUnRegisterServer(cloudServer));
+
         GlowCloudWrapper.getGlowCloud().getLogger().info("§7The server §e" + cloudServer.getServiceID() + " §7is no longer registered in §eGlow§6Cloud");
 
     }
