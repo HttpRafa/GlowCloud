@@ -16,8 +16,10 @@ import de.rafadev.glowcloud.wrapper.version.classes.CloudVersion;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class VersionManager {
 
@@ -60,6 +62,10 @@ public class VersionManager {
             }
         }
 
+    }
+
+    public CloudVersion get(String version) {
+        return versions.stream().filter(item -> item.getName().equals(version)).collect(Collectors.toList()).get(0);
     }
 
 }

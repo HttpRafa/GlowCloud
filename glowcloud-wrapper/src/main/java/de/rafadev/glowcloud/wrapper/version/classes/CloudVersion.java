@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.wrapper.version.classes;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.downloader.URLDownloader;
+import de.rafadev.glowcloud.lib.file.FileUtils;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.wrapper.main.GlowCloudWrapper;
 
@@ -40,6 +41,24 @@ public class CloudVersion implements IGlowCloudObject {
                 GlowCloudWrapper.getGlowCloud().getLogger().error("Can`t install the version with the name " + name + "§8!");
                 e.printStackTrace();
             }
+        }
+
+    }
+
+    public void prepare(File folder) {
+
+        if(!folder.exists()) {
+            folder.mkdirs();
+        }
+
+        if(!new File(folder.getAbsolutePath() + "/" + getSavedFile().getName()).exists()) {
+
+            try {
+                FileUtils.copyFileToDirectory(getSavedFile(), folder);
+            } catch (IOException e) {
+                GlowCloudWrapper.getGlowCloud().getLogger().handleException(e);
+            }
+
         }
 
     }
