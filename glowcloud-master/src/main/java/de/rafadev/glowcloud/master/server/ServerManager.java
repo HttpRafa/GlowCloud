@@ -8,11 +8,22 @@ package de.rafadev.glowcloud.master.server;
 //
 //------------------------------
 
+import com.google.gson.Gson;
+import de.rafadev.glowcloud.lib.classes.selector.Selector;
+import de.rafadev.glowcloud.master.group.bukkit.CloudBukkitGroup;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
+import de.rafadev.glowcloud.master.group.proxy.CloudProxyGroup;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.network.packet.out.PacketOutStartCloudServer;
+import de.rafadev.glowcloud.master.network.packet.out.PacketOutStopCloudServer;
+import de.rafadev.glowcloud.master.server.classes.OnlineCloudServer;
 import de.rafadev.glowcloud.master.server.classes.QueueCloudServer;
+import de.rafadev.glowcloud.master.server.seletor.CloudServerGroupSelector;
+import de.rafadev.glowcloud.master.server.seletor.CloudServerSelector;
+import de.rafadev.glowcloud.master.server.seletor.CloudStringSelector;
+import de.rafadev.glowcloud.master.server.seletor.CloudWrapperSelector;
+import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
 import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
 
 import java.util.LinkedList;
@@ -26,15 +37,57 @@ public class ServerManager {
 
     public ServerManager() {
 
+
+
+    }
+
+    public void registerServer(CloudServer cloudServer) {
+
+        CloudServer queueCloudServer = get(cloudServer.getServiceID());
+        if(queueCloudServer == null) GlowCloud.getGlowCloud().getLogger().info("Test");
+        servers.remove(queueCloudServer);
+
+        OnlineCloudServer onlineCloudServer = new OnlineCloudServer(cloudServer.getServiceID(), cloudServer.getUUID(), cloudServer.getCloudServerGroup(), queueCloudServer.getTemplate());
+        servers.add(onlineCloudServer);
+
+        GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8] §7is registered §7on §eGlow§6Cloud");
+
+    }
+
+    public void unRegisterServer(CloudServer cloudServer) {
+
+        List<CloudServer> server = servers.stream().filter(item -> item.getServiceID().equals(cloudServer.getServiceID())).collect(Collectors.toList());
+        servers.removeAll(server);
+
+        GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8] §7is unregistered §7on §eGlow§6Cloud");
+
+    }
+
+    public List<CloudServer> search(Selector selector) {
+
+        if(selector instanceof CloudWrapperSelector) {
+
+            return servers.stream().filter(item -> item.getCloudServerGroup().getWrapperID().equals(((CloudWrapperSelector) selector).getSelected().getId())).collect(Collectors.toList());
+
+        } else if(selector instanceof CloudServerGroupSelector) {
+
+            return servers.stream().filter(item -> item.getCloudServerGroup().getName().equals(((CloudServerGroupSelector) selector).getSelected().getName())).collect(Collectors.toList());
+
+        } else {
+
+            return new LinkedList<>();
+
+        }
+
     }
 
     public void checkGroup(CloudServerGroup cloudServerGroup) {
 
         GlowCloud.getGlowCloud().getLogger().debug("§7Checking the group §b" + cloudServerGroup.getName() + "§8...");
 
-        if(search(cloudServerGroup.getName()).size() < cloudServerGroup.getMinServerCount()) {
+        if(search(new CloudServerGroupSelector(cloudServerGroup)).size() < cloudServerGroup.getMinServerCount()) {
 
-            startListedServer(cloudServerGroup, cloudServerGroup.getMinServerCount() - search(cloudServerGroup.getName()).size());
+            startListedServer(cloudServerGroup, cloudServerGroup.getMinServerCount() - search(new CloudServerGroupSelector(cloudServerGroup)).size());
 
         }
 
@@ -46,14 +99,14 @@ public class ServerManager {
 
         String spliter = "-";
 
-        int min = search(cloudServerGroup.getName()).size() + amount;
+        int min = search(new CloudServerGroupSelector(cloudServerGroup)).size() + amount;
         int count = 0;
 
-        for(int i = 1; count < min; i++) {
+        for (int i = 1; count < min; i++) {
 
             String name = cloudServerGroup.getName() + spliter + i;
 
-            if(get(name) != null) {
+            if (get(name) != null) {
                 count++;
             } else {
                 startServer(name, UUID.randomUUID(), cloudServerGroup);
@@ -61,7 +114,7 @@ public class ServerManager {
             }
 
             try {
-                Thread.sleep(250);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -72,7 +125,7 @@ public class ServerManager {
 
     public void startServer(String serviceID, UUID uuid, CloudServerGroup cloudServerGroup) {
 
-        QueueCloudServer cloudServer = new QueueCloudServer(serviceID, uuid, cloudServerGroup.toSimple());
+        QueueCloudServer cloudServer = new QueueCloudServer(serviceID, uuid, cloudServerGroup.toSimple(), cloudServerGroup instanceof CloudBukkitGroup ? ((CloudBukkitGroup) cloudServerGroup).getCloudTemplateSystem().getSelectedTemplate() : ((CloudProxyGroup) cloudServerGroup).getCloudTemplateSystem().getSelectedTemplate());
 
         ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerGroup.getWrapperID());
 
@@ -81,6 +134,94 @@ public class ServerManager {
 
         servers.add(cloudServer);
 
+        GlowCloud.getGlowCloud().getLogger().debug(cloudServer.getTemplate().getName());
+
+    }
+
+    public void stopServer(Selector selector) {
+
+        if (selector instanceof CloudServerSelector) {
+
+            CloudServerSelector cloudServerSelector = (CloudServerSelector) selector;
+
+            unRegisterServer(cloudServerSelector.getSelected());
+
+            if (GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerSelector.getSelected().getCloudServerGroup().getWrapperID()) instanceof ConnectedCloudWrapper) {
+
+                ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerSelector.getSelected().getCloudServerGroup().getWrapperID());
+
+                GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(cloudWrapper.getChannelConnection(), new PacketOutStopCloudServer(cloudServerSelector.getSelected()));
+
+            }
+
+            GlowCloud.getGlowCloud().getScheduler().runWaitTask(new Runnable() {
+                @Override
+                public void run() {
+                    GlowCloud.getGlowCloud().getServerManager().checkGroup(GlowCloud.getGlowCloud().getGroupManager().get(cloudServerSelector.getSelected().getCloudServerGroup().getName()));
+                }
+            }, 1000);
+
+        } else if (selector instanceof CloudStringSelector) {
+
+            CloudStringSelector cloudStringSelector = (CloudStringSelector) selector;
+
+            CloudServer cloudServer = GlowCloud.getGlowCloud().getServerManager().get(cloudStringSelector.getSelected());
+
+            if (GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID()) instanceof ConnectedCloudWrapper) {
+
+                ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID());
+
+                GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(cloudWrapper.getChannelConnection(), new PacketOutStopCloudServer(cloudServer));
+
+            }
+
+            GlowCloud.getGlowCloud().getScheduler().runWaitTask(new Runnable() {
+                @Override
+                public void run() {
+                    GlowCloud.getGlowCloud().getServerManager().checkGroup(GlowCloud.getGlowCloud().getGroupManager().get(cloudServer.getCloudServerGroup().getName()));
+                }
+            }, 1000);
+
+        } else if (selector instanceof CloudServerGroupSelector) {
+
+            CloudServerGroupSelector server = (CloudServerGroupSelector) selector;
+
+            List<CloudServer> serversList = search(selector);
+
+            for (CloudServer cloudServer : serversList) {
+                if (cloudServer instanceof OnlineCloudServer) {
+
+                    unRegisterServer(cloudServer);
+
+                    if (GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID()) instanceof ConnectedCloudWrapper) {
+
+                        ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID());
+
+                        GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(cloudWrapper.getChannelConnection(), new PacketOutStopCloudServer(cloudServer));
+
+                    }
+
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            GlowCloud.getGlowCloud().getScheduler().runWaitTask(new Runnable() {
+                @Override
+                public void run() {
+                    GlowCloud.getGlowCloud().getServerManager().checkGroup(server.getSelected());
+                }
+            }, 1000);
+
+        }
+
+    }
+
+    public List<CloudServer> getServers() {
+        return servers;
     }
 
     public CloudServer get(String name) {
@@ -91,10 +232,5 @@ public class ServerManager {
 
     }
 
-    public List<CloudServer> search(String groupName) {
-
-        return servers.stream().filter(item -> item.getCloudServerGroup().getName().equals(groupName)).collect(Collectors.toList());
-
-    }
 
 }

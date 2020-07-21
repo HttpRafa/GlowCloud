@@ -10,12 +10,14 @@ package de.rafadev.glowcloud.master.server.classes;
 
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
+import de.rafadev.glowcloud.lib.template.SimpleCloudTemplate;
+import de.rafadev.glowcloud.master.template.CloudTemplateSystem;
 
 import java.util.UUID;
 
 public class QueueCloudServer extends CloudServer {
 
-    public QueueCloudServer(String serviceID, UUID uuid, SimpleCloudServerGroup cloudServerGroup) {
-        super(serviceID, uuid, cloudServerGroup);
+    public QueueCloudServer(String serviceID, UUID uuid, SimpleCloudServerGroup cloudServerGroup, SimpleCloudTemplate cloudTemplate) {
+        super(serviceID, uuid, cloudServerGroup, cloudTemplate);
     }
 }
