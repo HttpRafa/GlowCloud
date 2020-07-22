@@ -8,19 +8,30 @@ package de.rafadev.glowcloud.master.network.server;
 //
 //------------------------------
 
+import de.rafadev.glowcloud.lib.classes.server.CloudServer;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
+import de.rafadev.glowcloud.lib.network.ChannelConnection;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
+import de.rafadev.glowcloud.lib.network.protocol.ProtocolSender;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketManager;
 import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
+import de.rafadev.glowcloud.master.event.events.NetworkChannelConnectEvent;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.network.auth.GlowCloudClientAuth;
+import de.rafadev.glowcloud.master.server.classes.OnlineCloudServer;
+import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
+import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class NetworkServer implements IGlowCloudObject {
 
@@ -57,7 +68,16 @@ public class NetworkServer implements IGlowCloudObject {
 
                                         if(GlowCloud.getGlowCloud().isStarted()) {
                                             GlowCloud.getGlowCloud().getLogger().info("A new connection§8[§e" + channel.remoteAddress().toString() + "§8] §7is §eestablished§8...");
-                                            channel.pipeline().addLast("GlowCloudAuthHandler", new GlowCloudClientAuth());
+
+                                            NetworkChannelConnectEvent event = new NetworkChannelConnectEvent(channel);
+
+                                            GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(event);
+
+                                            if(!event.isCancelled()) {
+                                                channel.pipeline().addLast("GlowCloudAuthHandler", new GlowCloudClientAuth());
+                                            } else {
+                                                channel.close();
+                                            }
                                         } else {
                                             channel.close();
                                         }
@@ -121,6 +141,22 @@ public class NetworkServer implements IGlowCloudObject {
         } else {
             return false;
         }
+    }
+
+    public ProtocolSender getProtocolSender(ChannelConnection channelConnection) {
+
+        List<CloudWrapper> wrappers = GlowCloud.getGlowCloud().getWrapperManager().getWrappers().stream().filter(item -> (item instanceof ConnectedCloudWrapper) && ((ConnectedCloudWrapper) item).getChannelConnection().getChannel() == channelConnection.getChannel()).collect(Collectors.toList());
+        if(wrappers.size() > 0) {
+            return wrappers.get(0);
+        }
+
+        List<CloudServer> serverList = GlowCloud.getGlowCloud().getServerManager().getServers().stream().filter(item -> (item instanceof OnlineCloudServer) && (((OnlineCloudServer) item).getChannelConnection() != null) && ((OnlineCloudServer) item).getChannelConnection() == channelConnection).collect(Collectors.toList());
+        if(serverList.size() > 0) {
+            return serverList.get(0);
+        }
+
+        return null;
+
     }
 
     public PacketManager getPacketManager() {
