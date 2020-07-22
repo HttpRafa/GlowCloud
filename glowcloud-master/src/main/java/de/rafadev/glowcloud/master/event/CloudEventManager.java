@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.master.event;
 //------------------------------
 
 import com.google.gson.internal.$Gson$Preconditions;
+import de.rafadev.glowcloud.master.event.exception.EventException;
 import de.rafadev.glowcloud.master.event.item.CloudEventListenerItem;
 import de.rafadev.glowcloud.master.event.listener.CloudEventListener;
 import de.rafadev.glowcloud.master.main.GlowCloud;
@@ -23,17 +24,25 @@ public class CloudEventManager {
 
     private List<CloudEventListenerItem> listeners = new LinkedList<>();
 
-    public void callEvent(CloudEvent cloudEvent) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
+    public void callEvent(CloudEvent cloudEvent) {
 
-        for (CloudEventListenerItem listener : listeners) {
-            Class<?> aClass = listener.getCloudEventListener().getClass();
-            for (Method method : aClass.getDeclaredMethods()) {
-                if(method.isAnnotationPresent(CloudEventHandler.class)) {
-                    if(method.getParameters()[0].getType() == cloudEvent.getClass()) {
-                        method.invoke(null, cloudEvent);
+        try {
+
+            for (CloudEventListenerItem listener : listeners) {
+                CloudEventListener aClass = listener.getCloudEventListener();
+                for (Method method : aClass.getClass().getDeclaredMethods()) {
+                    if (method.isAnnotationPresent(CloudEventHandler.class)) {
+                        if (method.getParameters()[0].getType() == cloudEvent.getClass()) {
+                            method.invoke(null, cloudEvent);
+                        }
                     }
                 }
             }
+
+        } catch (NullPointerException exception) {
+            GlowCloud.getGlowCloud().getLogger().handleException(new EventException("The method is not static"));
+        } catch (IllegalAccessException | InvocationTargetException  exception) {
+            GlowCloud.getGlowCloud().getLogger().handleException(new EventException());
         }
 
     }
