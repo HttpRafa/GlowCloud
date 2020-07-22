@@ -12,6 +12,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+import de.rafadev.glowcloud.master.event.CloudEventManager;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.module.CloudModule;
 import de.rafadev.glowcloud.master.module.classes.LoadedCloudModule;
@@ -33,7 +34,15 @@ public class CloudModuleManager {
     private List<LoadedCloudModule> modules = new LinkedList<>();
     private HashMap<String, CloudModuleDescription> toLoad = new HashMap<>();
 
+    private CloudEventManager eventManager;
+
     private File folder = new File("modules//");
+
+    public CloudModuleManager() {
+
+        eventManager = new CloudEventManager();
+
+    }
 
     public void disableModules() {
         for (LoadedCloudModule module : modules) {
@@ -148,4 +157,7 @@ public class CloudModuleManager {
 
     }
 
+    public CloudEventManager getEventManager() {
+        return eventManager;
+    }
 }
