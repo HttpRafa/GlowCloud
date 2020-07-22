@@ -10,6 +10,9 @@ package de.rafadev.glowcloud.master.server;
 
 import com.google.gson.Gson;
 import de.rafadev.glowcloud.lib.classes.selector.Selector;
+import de.rafadev.glowcloud.master.event.events.CloudServerAddToQueueEvent;
+import de.rafadev.glowcloud.master.event.events.CloudServerStartEvent;
+import de.rafadev.glowcloud.master.event.events.CloudServerStopEvent;
 import de.rafadev.glowcloud.master.group.bukkit.CloudBukkitGroup;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
@@ -43,18 +46,27 @@ public class ServerManager {
 
     public void registerServer(CloudServer cloudServer) {
 
-        CloudServer queueCloudServer = get(cloudServer.getServiceID());
-        if(queueCloudServer == null) GlowCloud.getGlowCloud().getLogger().info("Test");
-        servers.remove(queueCloudServer);
+        CloudServerStartEvent event = new CloudServerStartEvent(cloudServer, GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID()));
 
-        OnlineCloudServer onlineCloudServer = new OnlineCloudServer(cloudServer.getServiceID(), cloudServer.getUUID(), cloudServer.getCloudServerGroup(), queueCloudServer.getTemplate());
-        servers.add(onlineCloudServer);
+        GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(event);
 
-        GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8] §7is registered §7on §eGlow§6Cloud");
+        if(!event.isCancelled()) {
+
+            CloudServer queueCloudServer = get(cloudServer.getServiceID());
+            servers.remove(queueCloudServer);
+
+            OnlineCloudServer onlineCloudServer = new OnlineCloudServer(cloudServer.getServiceID(), cloudServer.getUUID(), cloudServer.getCloudServerGroup(), queueCloudServer.getTemplate());
+            servers.add(onlineCloudServer);
+
+            GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8] §7is registered §7on §eGlow§6Cloud");
+
+        }
 
     }
 
     public void unRegisterServer(CloudServer cloudServer) {
+
+        GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(new CloudServerStopEvent(cloudServer));
 
         List<CloudServer> server = servers.stream().filter(item -> item.getServiceID().equals(cloudServer.getServiceID())).collect(Collectors.toList());
         servers.removeAll(server);
@@ -127,14 +139,22 @@ public class ServerManager {
 
         QueueCloudServer cloudServer = new QueueCloudServer(serviceID, uuid, cloudServerGroup.toSimple(), cloudServerGroup instanceof CloudBukkitGroup ? ((CloudBukkitGroup) cloudServerGroup).getCloudTemplateSystem().getSelectedTemplate() : ((CloudProxyGroup) cloudServerGroup).getCloudTemplateSystem().getSelectedTemplate());
 
-        ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerGroup.getWrapperID());
+        CloudServerAddToQueueEvent event = new CloudServerAddToQueueEvent(cloudServer);
 
-        GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(cloudWrapper.getChannelConnection(), new PacketOutStartCloudServer(cloudServer));
-        GlowCloud.getGlowCloud().getLogger().info("The server §e" + cloudServer.getServiceID() + " §7is now in the queue of the wrapper §e" + cloudWrapper.getId() + "§8.");
+        GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(event);
 
-        servers.add(cloudServer);
+        if(!event.isCancelled()) {
 
-        GlowCloud.getGlowCloud().getLogger().debug(cloudServer.getTemplate().getName());
+            ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerGroup.getWrapperID());
+
+            GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(cloudWrapper.getChannelConnection(), new PacketOutStartCloudServer(cloudServer));
+            GlowCloud.getGlowCloud().getLogger().info("The server §e" + cloudServer.getServiceID() + " §7is now in the queue of the wrapper §e" + cloudWrapper.getId() + "§8.");
+
+            servers.add(cloudServer);
+
+            GlowCloud.getGlowCloud().getLogger().debug(cloudServer.getTemplate().getName());
+
+        }
 
     }
 
