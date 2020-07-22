@@ -8,21 +8,26 @@ package de.rafadev.glowcloud.master.wrapper;
 //
 //------------------------------
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import de.rafadev.glowcloud.lib.classes.server.CloudServer;
 import de.rafadev.glowcloud.lib.document.Document;
 import de.rafadev.glowcloud.lib.file.CloudReader;
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
+import de.rafadev.glowcloud.lib.network.protocol.ProtocolSender;
+import de.rafadev.glowcloud.lib.network.protocol.packet.PacketSender;
+import de.rafadev.glowcloud.master.event.events.CloudWrapperConnectEvent;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
 import de.rafadev.glowcloud.master.main.GlowCloud;
+import de.rafadev.glowcloud.master.network.packet.handler.DefaultHandler;
+import de.rafadev.glowcloud.master.network.packet.out.PacketOutShutdownWrapper;
+import de.rafadev.glowcloud.master.server.seletor.CloudWrapperSelector;
 import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
 import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
 import de.rafadev.glowcloud.master.wrapper.classes.OfflineCloudWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,12 +104,28 @@ public class WrapperManager {
 
         if(cloudWrapper instanceof OfflineCloudWrapper) {
 
-            ConnectedCloudWrapper connectedCloudWrapper = new ConnectedCloudWrapper(cloudWrapper.getId(), cloudWrapper.getHost(), cloudWrapper.getHeap(), channelConnection);
+            CloudWrapperConnectEvent cloudWrapperConnectEvent = new CloudWrapperConnectEvent((OfflineCloudWrapper) cloudWrapper, identifier, channelConnection);
 
-            wrappers.remove(cloudWrapper);
-            wrappers.add(connectedCloudWrapper);
+            try {
+                GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(cloudWrapperConnectEvent);
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+                GlowCloud.getGlowCloud().getLogger().handleException(e);
+            }
 
-            return true;
+            if(!cloudWrapperConnectEvent.isCancelled()) {
+
+                ConnectedCloudWrapper connectedCloudWrapper = new ConnectedCloudWrapper(cloudWrapper.getId(), cloudWrapper.getHost(), cloudWrapper.getHeap(), channelConnection);
+                connectedCloudWrapper.setChannel(channelConnection.getChannel());
+
+                wrappers.remove(cloudWrapper);
+                wrappers.add(connectedCloudWrapper);
+
+                channelConnection.getChannel().pipeline().addLast(new DefaultHandler());
+
+                return true;
+            } else {
+                return false;
+            }
         } else {
             GlowCloud.getGlowCloud().getLogger().error("The wrapper with the id §8\"§4" + cloudWrapper.getId() + "§8@§c" + ((ConnectedCloudWrapper) cloudWrapper).getChannelConnection().getChannel().remoteAddress().toString() + "§8\" §cis already connected to the master§8!");
         }
@@ -113,14 +134,70 @@ public class WrapperManager {
 
     }
 
+    public boolean disconnectWrapper(String identifier) {
+
+        CloudWrapper cloudWrapper = search(identifier);
+
+        if(cloudWrapper instanceof ConnectedCloudWrapper) {
+
+            OfflineCloudWrapper offlineCloudWrapper = new OfflineCloudWrapper(cloudWrapper.getId(), cloudWrapper.getHost(), cloudWrapper.getHeap());
+
+            wrappers.remove(cloudWrapper);
+            wrappers.add(offlineCloudWrapper);
+
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public void handleDisconnect(OfflineCloudWrapper cloudWrapper) {
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        List<CloudServer> servers = GlowCloud.getGlowCloud().getServerManager().search(new CloudWrapperSelector(cloudWrapper));
+        for (CloudServer server : servers) {
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            GlowCloud.getGlowCloud().getServerManager().unRegisterServer(server);
+        }
+
+    }
+
     public void handleConnection(ConnectedCloudWrapper cloudWrapper) {
 
-        List<CloudServerGroup> wrapperGroups = GlowCloud.getGlowCloud().getGroupManager().getGroups().stream().filter(item -> item.getWrapperID().equals(cloudWrapper.getId())).collect(Collectors.toList());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
-        GlowCloud.getGlowCloud().getLogger().debug("Starting all server for the wrapper §b" + cloudWrapper.getId() + "§8.");
-        for (CloudServerGroup group : wrapperGroups) {
-            GlowCloud.getGlowCloud().getServerManager().checkGroup(group);
-        }
+                List<CloudServerGroup> wrapperGroups = GlowCloud.getGlowCloud().getGroupManager().getGroups().stream().filter(item -> item.getWrapperID().equals(cloudWrapper.getId())).collect(Collectors.toList());
+
+                GlowCloud.getGlowCloud().getLogger().debug("Starting all server for the wrapper §b" + cloudWrapper.getId() + "§8.");
+                for (CloudServerGroup group : wrapperGroups) {
+                    GlowCloud.getGlowCloud().getServerManager().checkGroup(group);
+                }
+            }
+        }, "checkGroups").start();
+
+    }
+
+    public void requestShutdown(ConnectedCloudWrapper connectedCloudWrapper) {
+
+        GlowCloud.getGlowCloud().getLogger().debug("Stopping the wrapper with the id " + connectedCloudWrapper.getId() + ".");
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().writePacket(connectedCloudWrapper.getAsChannelConnection(), new PacketOutShutdownWrapper(connectedCloudWrapper));
 
     }
 
@@ -132,7 +209,14 @@ public class WrapperManager {
     }
 
     public CloudWrapper search(String identifier) {
-        return wrappers.stream().filter(item -> item.getId().equals(identifier)).collect(Collectors.toList()).get(0);
+
+        List<CloudWrapper> result = wrappers.stream().filter(item -> item.getId().equals(identifier)).collect(Collectors.toList());
+
+        if(result.size() > 0) {
+            return result.get(0);
+        } else {
+            return null;
+        }
     }
 
     public boolean isRegistered(String identifier) {
