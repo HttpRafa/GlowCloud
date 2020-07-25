@@ -1,4 +1,4 @@
-![Logo](https://cdn.discordapp.com/attachments/714536895345852517/726118684937945088/SPOILER_GlowCloud.png)
+![Logo](https://github.com/HttpRafa/GlowCloud/blob/2.0.0/web/GlowCloud.jpg?raw=true)
 
 # GlowCloud Technology 2
 
