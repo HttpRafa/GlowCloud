@@ -29,7 +29,8 @@
         <module>glowcloud-master</module>
         <module>glowcloud-wrapper</module>
         <module>glowcloud-lib</module>
-        <module>glowcloud-api</module>
+        <module>glowcloud-modules</module>
+        <module>glowcloud-core</module>
     </modules>
 
 
