@@ -1,0 +1,4 @@
+name: GlowCloudAPI
+version: 2.0.0-ALPHA
+main: de.rafadev.glowcloud.core.bukkit.BukkitBootstrap
+author: RafaDev
