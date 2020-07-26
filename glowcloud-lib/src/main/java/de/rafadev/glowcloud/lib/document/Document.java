@@ -13,7 +13,10 @@ import com.google.gson.stream.JsonReader;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Document implements IGlowCloudObject {
 
@@ -67,6 +70,22 @@ public class Document implements IGlowCloudObject {
 
     public String getAsString(String key) {
         return data.get(key).getAsString();
+    }
+
+    public <T> T getAsObject(String key, Class<T> to) {
+        return new Gson().fromJson(data.get(key), to);
+    }
+
+    public List<Class<?>> getList(String key, Class<?> to) {
+
+        List<Class<?>> list = new LinkedList<>();
+
+        for (JsonElement element : data.get(key).getAsJsonArray()) {
+            list.add(new Gson().fromJson(element, (Type) to));
+        }
+
+        return list;
+
     }
 
     public boolean getAsBoolean(String key) {
