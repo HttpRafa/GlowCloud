@@ -1,0 +1,38 @@
+{
+  "group": {
+    "name": "Main",
+    "wrappers": [
+      "MainSkript-1"
+    ]
+  },
+  "server": {
+    "memory": 256,
+    "dynamicMemory": 256,
+    "serverType": "BUKKIT"
+  },
+  "cloud": {
+    "maxServerCount": -1,
+    "minServerCount": 2,
+    "newServerPercent": 100
+  },
+  "state": {
+    "maintenance": false
+  },
+  "template": {
+    "groupMode": "DYNAMIC",
+    "defaultTemplate": "default",
+    "useRandomTemplate": false,
+    "templates": [
+      {
+        "name": "default",
+        "version": "bukkit"
+      }
+    ]
+  },
+  "settings": {
+    "network": {
+      "fallback": true,
+      "fallback-permission": ""
+    }
+  }
+}

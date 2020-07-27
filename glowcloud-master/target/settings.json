@@ -1,0 +1,15 @@
+{
+  "cloud": {
+    "port": 6360
+  },
+  "server": {
+    "name-splitter": "-"
+  },
+  "wrappers": [
+    {
+      "id": "MainSkript-1",
+      "host": "127.0.0.1",
+      "heap": 268435
+    }
+  ]
+}

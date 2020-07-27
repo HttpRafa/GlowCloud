@@ -2,7 +2,7 @@
   "group": {
     "name": "Proxy",
     "wrappers": [
-      "Wrapper-1"
+      "MainSkript-1"
     ]
   },
   "server": {
@@ -21,10 +21,11 @@
   "template": {
     "groupMode": "STATIC",
     "defaultTemplate": "default",
+    "useRandomTemplate": false,
     "templates": [
       {
         "name": "default",
-        "version": "main"
+        "version": "bungeecord"
       }
     ]
   },

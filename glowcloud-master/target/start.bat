@@ -1,0 +1,2 @@
+java -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:+UnlockExperimentalVMOptions -XX:+UseCompressedOops -XX:-UseAdaptiveSizePolicy -XX:CompileThreshold=100 -Dfile.encoding=UTF-8 -Xmx456M -Xms256m -jar GlowCloud-Master.jar
+exit
