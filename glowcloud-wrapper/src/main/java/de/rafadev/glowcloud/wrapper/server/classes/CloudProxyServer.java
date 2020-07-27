@@ -10,13 +10,14 @@ package de.rafadev.glowcloud.wrapper.server.classes;
 
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
+import de.rafadev.glowcloud.lib.template.SimpleCloudTemplate;
 
 import java.util.UUID;
 
 public class CloudProxyServer extends CloudServer {
 
-    public CloudProxyServer(String serviceID, UUID uuid, SimpleCloudServerGroup cloudServerGroup) {
-        super(serviceID, uuid, cloudServerGroup);
+    public CloudProxyServer(String serviceID, UUID uuid, SimpleCloudServerGroup cloudServerGroup, SimpleCloudTemplate cloudTemplate) {
+        super(serviceID, uuid, cloudServerGroup, cloudTemplate);
     }
 
     public void kill() {
@@ -29,6 +30,10 @@ public class CloudProxyServer extends CloudServer {
 
     public boolean startService() {
         return true;
+    }
+
+    public CloudServer toSimple() {
+        return new CloudServer(getServiceID(), getUUID(), getPort(), getCloudServerGroup(), getTemplate());
     }
 
 }
