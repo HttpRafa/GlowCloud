@@ -27,6 +27,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
 
+
         try {
 
             Packet packet = GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().toPacket(msg);
@@ -34,7 +35,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
 
             GlowCloud.getGlowCloud().getLogger().debug("§bPacket§8[§7" + ctx.channel().remoteAddress().toString() + "§8/§7" + packet.getId() + "§8] §7--> §bSimpleChannelInboundHandler§8[§7GlowCloudAuthHandler§8]");
 
-            if(packet.getId() == PacketRC.MAIN - 1) {
+            if (packet.getId() == PacketRC.MAIN - 1) {
                 // Is a auth packet
 
                 ctx.channel().pipeline().remove("GlowCloudAuthHandler");
@@ -42,10 +43,10 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
 
                 GlowCloud.getGlowCloud().getLogger().info("A new verified connection§8[§e" + ctx.channel().remoteAddress().toString() + "§8] §7is §eestablished§8...");
 
-                if(authentication.getAuthServiceType() == AuthServiceType.WRAPPER) {
-                    if(GlowCloud.getGlowCloud().getKeyManager().getConnectionKey().is(authentication.getAuthKey())) {
-                        if(GlowCloud.getGlowCloud().getWrapperManager().isRegistered(authentication.getServiceID())) {
-                            if(GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
+                if (authentication.getAuthServiceType() == AuthServiceType.WRAPPER) {
+                    if (GlowCloud.getGlowCloud().getKeyManager().getConnectionKey().is(authentication.getAuthKey())) {
+                        if (GlowCloud.getGlowCloud().getWrapperManager().isRegistered(authentication.getServiceID())) {
+                            if (GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
                                 GlowCloud.getGlowCloud().getLogger().info("The Wrapper §e" + authentication.getServiceID() + " §7is now §aconnected§8.");
                                 GlowCloud.getGlowCloud().getWrapperManager().handleConnection((ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(authentication.getServiceID()));
                             }
@@ -53,7 +54,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
 
                             GlowCloud.getGlowCloud().getLogger().info("Register Wrapper §e" + authentication.getServiceID() + "§8@§6" + channelConnection.getChannel().remoteAddress().toString().split(":")[0].replaceAll("/", "") + " §7with §e" + packet.getDocument().get("extra").getAsJsonObject().get("heap").getAsInt() + " §7MB");
                             GlowCloud.getGlowCloud().getWrapperManager().registerWrapper(authentication.getServiceID(), channelConnection.getChannel().remoteAddress().toString().split(":")[0].replaceAll("/", ""), packet.getDocument().get("extra").getAsJsonObject().get("heap").getAsInt());
-                            if(GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
+                            if (GlowCloud.getGlowCloud().getWrapperManager().connectWrapper(authentication.getServiceID(), channelConnection)) {
                                 GlowCloud.getGlowCloud().getLogger().info("The Wrapper §e" + authentication.getServiceID() + " §7is now §aconnected§8.");
                                 GlowCloud.getGlowCloud().getWrapperManager().handleConnection((ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(authentication.getServiceID()));
                             }
@@ -61,8 +62,7 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
                     } else {
                         throw new IllegalStateException("The Key ist wrong!");
                     }
-                } else if(authentication.getAuthServiceType() == AuthServiceType.BUKKIT_OR_BUNGEECORD) {
-
+                } else if (authentication.getAuthServiceType() == AuthServiceType.BUKKIT_OR_BUNGEECORD) {
 
 
                 }
@@ -75,7 +75,11 @@ public class GlowCloudClientAuth extends SimpleChannelInboundHandler<ByteBuf> {
             ctx.channel().close();
             exception.printStackTrace();
         }
+    }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (" + cause.getClass().getSimpleName() + ") " + cause.getMessage());
     }
 
 }
