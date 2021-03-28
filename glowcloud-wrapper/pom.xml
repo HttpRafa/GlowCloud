@@ -5,7 +5,7 @@
     <parent>
         <artifactId>GlowCloud</artifactId>
         <groupId>de.rafadev</groupId>
-        <version>1.0-ALPHA</version>
+        <version>2.0.0-ALPHA</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>de.rafadev</groupId>
             <artifactId>glowcloud-lib</artifactId>
-            <version>1.0-ALPHA</version>
+            <version>2.0.0-ALPHA</version>
         </dependency>
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
