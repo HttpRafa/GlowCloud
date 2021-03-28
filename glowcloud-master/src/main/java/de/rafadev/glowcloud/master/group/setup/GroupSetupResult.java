@@ -22,8 +22,18 @@ public class GroupSetupResult {
     private GroupMode groupMode;
     private ServerType serverType;
 
+    private boolean fallback;
+
     public GroupSetupResult() {
 
+    }
+
+    public void setFallback(boolean fallback) {
+        this.fallback = fallback;
+    }
+
+    public boolean isFallback() {
+        return fallback;
     }
 
     public String getName() {

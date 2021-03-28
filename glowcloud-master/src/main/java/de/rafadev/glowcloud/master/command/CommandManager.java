@@ -11,6 +11,7 @@ package de.rafadev.glowcloud.master.command;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.logging.color.ConsoleColor;
 import de.rafadev.glowcloud.master.command.executer.Command;
+import de.rafadev.glowcloud.master.command.request.InputRequest;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 
 import java.util.LinkedList;
@@ -33,8 +34,8 @@ public class CommandManager {
                 try {
                     while (true) {
                         while ((commandLine = logger.readLine(ConsoleColor.toColouredString('§', "§8[ §6" + user + "§8@§eGlowCloud §8] §7- "))) != null) {
-                            if(!(commandLine.equalsIgnoreCase(""))) {
-                                if(GlowCloud.getGlowCloud().getGroupManager().getGroupSetup() == null) {
+                            if (!(commandLine.equalsIgnoreCase(""))) {
+                                if (GlowCloud.getGlowCloud().getGroupManager().getGroupSetup() == null) {
                                     String key = commandLine.split(" ")[0];
                                     List<Command> selected = commandList.stream().filter(command -> command.getName().equalsIgnoreCase(key.trim())).collect(Collectors.toList());
                                     if (selected.size() == 0) {

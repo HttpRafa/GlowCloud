@@ -15,7 +15,7 @@ import org.fusesource.jansi.AnsiConsole;
 public class GlowCloudLauncher {
 
     public static void main(String[] args) {
-        if (Float.parseFloat(System.getProperty("java.class.version")) < 52D) {
+        if (Float.parseFloat(System.getProperty("java.class.version")) < 52F) {
             System.out.println("This application needs Java 8 or 10.0.1");
             return;
         }
@@ -25,6 +25,15 @@ public class GlowCloudLauncher {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
 
         AnsiConsole.systemInstall();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                if(GlowCloud.getGlowCloud() != null) {
+                    GlowCloud.getGlowCloud().exit();
+                }
+            }
+        });
+
         showLogo();
 
         /*
@@ -32,6 +41,7 @@ public class GlowCloudLauncher {
          */
 
         try {
+            System.out.println(ConsoleColor.toColouredString('§', "Starting the §eGlowCloud §6Master §7application§8...§7"));
             GlowCloud.run(args);
         } catch (Exception exception) {
             System.out.println("Error by starting GlowCloud.");

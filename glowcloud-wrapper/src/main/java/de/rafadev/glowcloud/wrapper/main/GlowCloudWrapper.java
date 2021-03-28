@@ -12,12 +12,16 @@ import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.auth.NetworkAuthentication;
 import de.rafadev.glowcloud.lib.network.auth.types.AuthServiceType;
+import de.rafadev.glowcloud.lib.network.utils.CloudUtils;
 import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
 import de.rafadev.glowcloud.wrapper.command.CommandManager;
+import de.rafadev.glowcloud.wrapper.command.commands.DebugCommand;
+import de.rafadev.glowcloud.wrapper.command.commands.HelpCommand;
 import de.rafadev.glowcloud.wrapper.command.commands.StopCommand;
 import de.rafadev.glowcloud.wrapper.file.FileManager;
 import de.rafadev.glowcloud.wrapper.key.KeyManager;
 import de.rafadev.glowcloud.wrapper.network.manager.NetworkManager;
+import de.rafadev.glowcloud.wrapper.server.ServerManager;
 import de.rafadev.glowcloud.wrapper.version.VersionManager;
 
 import java.io.IOException;
@@ -31,6 +35,7 @@ public class GlowCloudWrapper {
     private NetworkManager networkManager;
     private KeyManager keyManager;
     private CommandManager commandManager;
+    private ServerManager serverManager;
 
     private CloudLogger logger;
     private GlowScheduler scheduler;
@@ -82,18 +87,34 @@ public class GlowCloudWrapper {
          */
         commandManager.registerCommand(new StopCommand("stop", null, "Stops the GlowCloud Wrapper application"));
         commandManager.registerCommand(new StopCommand("exit", null, "Stops the GlowCloud Wrapper application"));
+        commandManager.registerCommand(new HelpCommand("help", null, "Displays all executable commands"));
+        commandManager.registerCommand(new DebugCommand("debug", null, "Enable the DebugMode for the Cloud"));
 
         /*
         Loading all Managers
          */
-        networkManager = new NetworkManager(new NetworkAddress("127.0.0.1", 6360));
+        networkManager = new NetworkManager(new NetworkAddress(fileManager.getConfig().getAsString("masterAddress"), fileManager.getConfig().get("masterPort").getAsInt()));
         commandManager.startReader(logger);
+        serverManager = new ServerManager();
+        serverManager.startQueue();
 
         // Create a Auth
-        NetworkAuthentication networkAuthentication = new NetworkAuthentication("Wrapper-1", AuthServiceType.WRAPPER, keyManager.getConnectionKey());
+        NetworkAuthentication networkAuthentication = new NetworkAuthentication(fileManager.getConfig().getAsString("id"), AuthServiceType.WRAPPER, keyManager.getConnectionKey());
 
         // Start the Connection
         networkManager.start(networkAuthentication, scheduler);
+
+    }
+
+    public void reset() {
+        GlowCloudWrapper.getGlowCloud().getLogger().warning("§cThe wrapper is now reset§8.");
+        networkManager.setCheckConnection(false);
+
+        serverManager.resetAllServers();
+
+        CloudUtils.sleep(1000);
+
+        networkManager.setCheckConnection(true);
 
     }
 
@@ -106,25 +127,19 @@ public class GlowCloudWrapper {
             networkManager.shutdown();
             logger.info("Cloud Wrapper is shutting down...");
 
-            logger.overrideLine(1, "Closing the connection to the master. §8[§cClosing§8]");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            logger.overrideLine(1, "Closing the connection to the master. §8[§6Closing§8]");
+
+            CloudUtils.sleep(500);
+
             if(networkManager != null && networkManager.getNetworkConnection() != null && networkManager.getNetworkConnection().shutdown()) {
-                logger.overrideLine(1, "Closing the connection to the master. §8[§aClosed§8] ");
+                logger.overrideLine(1, "Closing the connection to the master. §8[§cClosed§8] ");
                 logger.nextLine();
             } else {
                 logger.overrideLine(1, "Closing the connection to the master. §8[§4Failed§8] ");
                 logger.nextLine();
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            logger.info("Stopping all running server... §8[§e1/10§8]");
+
+            CloudUtils.sleep(500);
 
             logger.info("§7Thanks for using §eGlowCloud§8.");
 
@@ -157,6 +172,10 @@ public class GlowCloudWrapper {
 
     public VersionManager getVersionManager() {
         return versionManager;
+    }
+
+    public ServerManager getServerManager() {
+        return serverManager;
     }
 
     public Runtime getRuntime() {

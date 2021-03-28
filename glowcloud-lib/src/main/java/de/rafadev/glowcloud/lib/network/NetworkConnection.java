@@ -8,13 +8,14 @@ package de.rafadev.glowcloud.lib.network;
 //
 //------------------------------
 
+import com.google.gson.JsonObject;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.auth.NetworkAuthentication;
 import de.rafadev.glowcloud.lib.network.auth.packet.out.PacketOutAuth;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketManager;
-import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
+import de.rafadev.glowcloud.lib.network.utils.CloudUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -28,34 +29,34 @@ public class NetworkConnection implements IGlowCloudObject {
     private EventLoopGroup eventLoopGroup;
     private ChannelConnection channelConnection;
 
-    private PacketManager packetManager = new PacketManager();
+    private PacketManager packetManager;
 
     private NetworkAddress networkAddress;
     private int trys;
 
-    public NetworkConnection(NetworkAddress networkAddress) {
+    public NetworkConnection(NetworkAddress networkAddress, CloudLogger cloudLogger) {
         this.networkAddress = networkAddress;
+        this.packetManager = new PacketManager(cloudLogger);
     }
 
-    public void tryConnect(NetworkAuthentication networkAuthentication, SimpleChannelInboundHandler<?> handler, CloudLogger cloudLogger) {
+    public void tryConnect(NetworkAuthentication networkAuthentication, SimpleChannelInboundHandler<?> handler, CloudLogger cloudLogger, JsonObject extraAuthData) {
         trys++;
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                cloudLogger.info("Try to connect the host §8[§e" + networkAddress.toString() + "§8]...");
+                if(cloudLogger != null) cloudLogger.info("Try to connect the host §8[§e" + networkAddress.toString() + "§8]...");
 
-                eventLoopGroup = NetworkUtils.eventLoopGroup();
+                eventLoopGroup = CloudUtils.eventLoopGroup();
 
                 try {
                     Bootstrap b = new Bootstrap();
                     b.group(eventLoopGroup);
-                    b.channel(NetworkUtils.isEpollAvailable() ? EpollSocketChannel.class : NioSocketChannel.class);
+                    b.channel(CloudUtils.isEpollAvailable() ? EpollSocketChannel.class : NioSocketChannel.class);
                     b.option(ChannelOption.SO_KEEPALIVE, true);
                     b.handler(new ChannelInitializer<Channel>() {
                         @Override
                         protected void initChannel(Channel channel) throws Exception {
-                            channel.pipeline().addLast(handler);
                         }
                     });
 
@@ -63,32 +64,38 @@ public class NetworkConnection implements IGlowCloudObject {
                         ChannelFuture f = b.connect(networkAddress.getHost(), networkAddress.getPort()).sync().addListener(
                                 new ChannelFutureListener() {
                                     @Override
-                                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                                        if (channelFuture.isSuccess()) {
+                                    public void operationComplete(ChannelFuture channelFuture) {
+                                        try {
+                                            if (channelFuture.isSuccess()) {
 
-                                            cloudLogger.info("The connection to the host was successfully §acreated§8.");
-                                            channelConnection = new ChannelConnection(channelFuture.channel());
-                                            cloudLogger.info("Try to auth the connection on the server§8.");
-                                            packetManager.writePacket(channelConnection, new PacketOutAuth(networkAuthentication));
+                                                channelFuture.channel().pipeline().addLast(handler);
 
-                                            Timer timer = new Timer();
-                                            timer.schedule(new TimerTask() {
-                                                @Override
-                                                public void run() {
-                                                    if(!channelFuture.channel().isActive()) {
-                                                        cloudLogger.error("§4The connection was killed§8.");
+                                                if(cloudLogger != null) cloudLogger.info("The connection to the host was successfully §acreated§8.");
+                                                channelConnection = new ChannelConnection(channelFuture.channel());
+                                                if(cloudLogger != null) cloudLogger.info("Try to auth the connection on the server§8.");
+                                                packetManager.writePacket(channelConnection, extraAuthData == null ? new PacketOutAuth(networkAuthentication) : new PacketOutAuth(networkAuthentication, extraAuthData));
+
+                                                Timer timer = new Timer();
+                                                timer.schedule(new TimerTask() {
+                                                    @Override
+                                                    public void run() {
+                                                        if (!channelFuture.channel().isActive()) {
+                                                            if(cloudLogger != null) cloudLogger.error("§4The connection was killed§8.");
+                                                        }
                                                     }
+                                                }, 1000);
+
+                                            } else {
+
+                                                channelConnection = null;
+                                                if (cloudLogger != null) {
+                                                    cloudLogger.error("Can`t connect to the NetworkAddress§8[§c" + networkAddress.getHost() + ":" + networkAddress.getPort() + "§8]");
+                                                    cloudLogger.error("This is the try §8» §4" + trys);
                                                 }
-                                            }, 1000);
+                                                eventLoopGroup.shutdownGracefully();
 
-                                        } else {
-
-                                            channelConnection = null;
-                                            if(cloudLogger != null) {
-                                                cloudLogger.error("Can`t connect to the NetworkAddress§8[§c" + networkAddress.getHost() + ":" + networkAddress.getPort() + "§8]");
-                                                cloudLogger.error("This is the try §8» §4" + trys);
                                             }
-                                            eventLoopGroup.shutdownGracefully();
+                                        } catch (Exception exception) {
 
                                         }
                                     }
@@ -133,5 +140,13 @@ public class NetworkConnection implements IGlowCloudObject {
 
     public ChannelConnection getChannelConnection() {
         return channelConnection;
+    }
+
+    public PacketManager getPacketManager() {
+        return packetManager;
+    }
+
+    public NetworkAddress getNetworkAddress() {
+        return networkAddress;
     }
 }

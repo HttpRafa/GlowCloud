@@ -15,8 +15,7 @@ import de.rafadev.glowcloud.lib.network.ChannelConnection;
 import de.rafadev.glowcloud.lib.network.address.NetworkAddress;
 import de.rafadev.glowcloud.lib.network.protocol.ProtocolSender;
 import de.rafadev.glowcloud.lib.network.protocol.packet.PacketManager;
-import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
-import de.rafadev.glowcloud.lib.scheduler.GlowScheduler;
+import de.rafadev.glowcloud.lib.network.utils.CloudUtils;
 import de.rafadev.glowcloud.master.event.events.NetworkChannelConnectEvent;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.network.auth.GlowCloudClientAuth;
@@ -30,13 +29,12 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class NetworkServer implements IGlowCloudObject {
 
     private NetworkAddress networkAddress;
-    private EventLoopGroup eventLoopGroup = NetworkUtils.eventLoopGroup();
+    private EventLoopGroup eventLoopGroup = CloudUtils.eventLoopGroup();
 
     private PacketManager packetManager;
 
@@ -46,7 +44,6 @@ public class NetworkServer implements IGlowCloudObject {
     }
 
     public void start() {
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -83,8 +80,12 @@ public class NetworkServer implements IGlowCloudObject {
                                         }
                                     }
 
+                                    @Override
+                                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                                    }
                                 })
                                 .option(ChannelOption.SO_BACKLOG, 128)
+                                .option(ChannelOption.SO_RCVBUF, 1220)
                                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
                         // Bind and start to accept incoming connections.
@@ -102,12 +103,13 @@ public class NetworkServer implements IGlowCloudObject {
                                          */
                                         if (channelFuture.isSuccess()) {
 
-                                            GlowCloud.getGlowCloud().getLogger().info("The NetworkServer is started on the " + networkAddress.getPort());
-
+                                            GlowCloud.getGlowCloud().getLogger().info("The NetworkServer is started on the port " + networkAddress.getPort());
+                                            GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log("--- SERVER STARTED ---");
                                         } else {
 
                                             GlowCloud.getGlowCloud().getLogger().error("Can`t start the NetworkServer on the port " + networkAddress.getPort());
                                             GlowCloud.getGlowCloud().shutdown();
+                                            GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log("--- SERVER START FAILED [" + channelFuture.cause().getMessage() + "] ---");
 
                                         }
                                     }
@@ -137,6 +139,7 @@ public class NetworkServer implements IGlowCloudObject {
     public boolean shutdown() {
         if(eventLoopGroup != null) {
             eventLoopGroup.shutdownGracefully();
+            GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log("--- SERVER STOPPED ---");
             return true;
         } else {
             return false;

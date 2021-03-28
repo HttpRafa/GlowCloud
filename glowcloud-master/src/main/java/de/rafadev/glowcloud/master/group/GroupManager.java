@@ -72,11 +72,9 @@ public class GroupManager {
                     cloudServerGroup.setMaxServerCount(jsonObject.get("cloud").getAsJsonObject().get("maxServerCount").getAsInt());
                     cloudServerGroup.setNewServerPercent(jsonObject.get("cloud").getAsJsonObject().get("newServerPercent").getAsInt());
 
-                    List<String> wrappers = new LinkedList<>();
                     for (JsonElement jsonElement : groupObject.get("wrappers").getAsJsonArray()) {
-                        wrappers.add(jsonElement.getAsString());
+                        cloudServerGroup.setWrapperID(jsonElement.getAsString());
                     }
-                    cloudServerGroup.setWrapperID(wrappers);
 
                     if (cloudServerGroup.getServerType() == ServerType.BUKKIT) {
                         CloudBukkitGroup cloudBukkitGroup = new CloudBukkitGroup(cloudServerGroup);
@@ -90,6 +88,7 @@ public class GroupManager {
 
                 } catch (Exception e) {
                     GlowCloud.getGlowCloud().getLogger().error("Can`t load group \"" + file.getName().replaceAll(".json", "") + "\"!");
+                    GlowCloud.getGlowCloud().getLogger().handleException(e);
                 }
             } else {
                 GlowCloud.getGlowCloud().getLogger().error("Invalid format for " + file.getName() + " file§8!");
@@ -127,20 +126,9 @@ public class GroupManager {
             simpleCloudServerGroup.setServerType(result.getServerType());
             simpleCloudServerGroup.setMaintenance(false);
             simpleCloudServerGroup.setFallback(result.isFallback());
-            List<String> wrappers = new LinkedList<>();
-            wrappers.add(result.getWrapperID());
-            simpleCloudServerGroup.setWrapperID(wrappers);
+            simpleCloudServerGroup.setWrapperID(result.getWrapperID());
             simpleCloudServerGroup.setName(result.getName());
 
-            CloudServerGroup cloudServerGroup = null;
-            
-            if(result.getServerType() == ServerType.BUKKIT) {
-                cloudServerGroup = new CloudBukkitGroup(simpleCloudServerGroup);
-            } else if(result.getServerType() == ServerType.BUNGEECORD) {
-                cloudServerGroup = new CloudProxyGroup(simpleCloudServerGroup);
-            }
-
-            inject(cloudServerGroup);
 
             File file = new File(folder.getPath() + "/" + result.getName() + ".json");
             try {
@@ -154,11 +142,9 @@ public class GroupManager {
                  */
 
                 JsonObject groupObject = new JsonObject();
-                groupObject.addProperty("name", cloudServerGroup.getName());
+                groupObject.addProperty("name", simpleCloudServerGroup.getName());
                 JsonArray wrapperList = new JsonArray();
-                for (String wrapperID : cloudServerGroup.getWrapperIDs()) {
-                    wrapperList.add(wrapperID);
-                }
+                wrapperList.add(simpleCloudServerGroup.getWrapperID());
                 groupObject.add("wrappers", wrapperList);
                 mainObject.add("group", groupObject);
 
@@ -167,9 +153,9 @@ public class GroupManager {
                  */
 
                 JsonObject serverObject = new JsonObject();
-                serverObject.addProperty("memory", cloudServerGroup.getMemory());
-                serverObject.addProperty("dynamicMemory", cloudServerGroup.getDynamicMemory());
-                serverObject.addProperty("serverType", cloudServerGroup.getServerType().toString());
+                serverObject.addProperty("memory", simpleCloudServerGroup.getMemory());
+                serverObject.addProperty("dynamicMemory", simpleCloudServerGroup.getDynamicMemory());
+                serverObject.addProperty("serverType", simpleCloudServerGroup.getServerType().toString());
                 mainObject.add("server", serverObject);
 
                 /*
@@ -177,9 +163,9 @@ public class GroupManager {
                  */
 
                 JsonObject autoObject = new JsonObject();
-                autoObject.addProperty("maxServerCount", cloudServerGroup.getMaxServerCount());
-                autoObject.addProperty("minServerCount", cloudServerGroup.getMinServerCount());
-                autoObject.addProperty("newServerPercent", cloudServerGroup.getNewServerPercent());
+                autoObject.addProperty("maxServerCount", simpleCloudServerGroup.getMaxServerCount());
+                autoObject.addProperty("minServerCount", simpleCloudServerGroup.getMinServerCount());
+                autoObject.addProperty("newServerPercent", simpleCloudServerGroup.getNewServerPercent());
                 mainObject.add("cloud", autoObject);
 
                 /*
@@ -187,7 +173,7 @@ public class GroupManager {
                  */
 
                 JsonObject stateObject = new JsonObject();
-                stateObject.addProperty("maintenance", cloudServerGroup.isMaintenance());
+                stateObject.addProperty("maintenance", simpleCloudServerGroup.isMaintenance());
                 //stateObject.addProperty("fallback", cloudServerGroup.isFallback());
                 mainObject.add("state", stateObject);
 
@@ -196,14 +182,15 @@ public class GroupManager {
                  */
 
                 JsonObject templateObject = new JsonObject();
-                templateObject.addProperty("groupMode", cloudServerGroup.getGroupMode().toString());
+                templateObject.addProperty("groupMode", simpleCloudServerGroup.getGroupMode().toString());
                 templateObject.addProperty("defaultTemplate", "default");
+                templateObject.addProperty("useRandomTemplate", false);
 
                 JsonArray templateListArray = new JsonArray();
 
                 JsonObject defaultTemplateObject = new JsonObject();
                 defaultTemplateObject.addProperty("name", "default");
-                defaultTemplateObject.addProperty("version", cloudServerGroup.getServerType().toString().toLowerCase());
+                defaultTemplateObject.addProperty("version", simpleCloudServerGroup.getServerType().toString().toLowerCase());
                 templateListArray.add(defaultTemplateObject);
                 templateObject.add("templates", templateListArray);
                 mainObject.add("template", templateObject);
@@ -269,13 +256,33 @@ public class GroupManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            CloudServerGroup cloudServerGroup = null;
+            
+            if(result.getServerType() == ServerType.BUKKIT) {
+                cloudServerGroup = new CloudBukkitGroup(simpleCloudServerGroup);
+            } else if(result.getServerType() == ServerType.BUNGEECORD) {
+                cloudServerGroup = new CloudProxyGroup(simpleCloudServerGroup);
+            }
+
+            inject(cloudServerGroup);
+
+            GlowCloud.getGlowCloud().getServerManager().checkGroup(cloudServerGroup);
+
         }
+
     }
 
     public void inject(CloudServerGroup serverGroup) {
 
         groups.add(serverGroup);
-        GlowCloud.getGlowCloud().getLogger().info("Loading ServerGroup §e" + serverGroup.getName() + "§8@§6" + (serverGroup.getWrapperIDs().size() > 1 ? serverGroup.getWrapperIDs().toString() : serverGroup.getWrapperIDs().get(0)) + " §7with §e" + serverGroup.getDynamicMemory() + " §7MB");
+        GlowCloud.getGlowCloud().getLogger().info("Loading ServerGroup §e" + serverGroup.getName() + "§8@§6" + serverGroup.getWrapperID() + " §7with §e" + serverGroup.getDynamicMemory() + " §7MB");
+
+    }
+
+    public File getFile(CloudServerGroup cloudServerGroup) {
+
+        return new File(folder.getPath() + "/" + cloudServerGroup.getName() + ".json");
 
     }
 
@@ -289,6 +296,16 @@ public class GroupManager {
 
     public List<CloudServerGroup> search(String name) {
         return groups.stream().filter(group -> group.getName().equalsIgnoreCase(name)).collect(Collectors.toList());
+    }
+
+    public CloudServerGroup get(String name) {
+
+        return search(name).size() > 0 ? search(name).get(0) : null;
+
+    }
+
+    public List<CloudServerGroup> getGroups() {
+        return groups;
     }
 
     public void setGroupSetup(GroupSetup groupSetup) {

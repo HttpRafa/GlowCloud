@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.master.command.commands;
 //------------------------------
 
 import de.rafadev.glowcloud.master.command.executer.Command;
+import de.rafadev.glowcloud.master.main.GlowCloud;
 
 public class DebugCommand extends Command {
 
@@ -18,6 +19,12 @@ public class DebugCommand extends Command {
 
     @Override
     public void execute(String[] args) {
-
+        if(!GlowCloud.getGlowCloud().getLogger().isDebugging()) {
+            GlowCloud.getGlowCloud().getLogger().setDebugging(true);
+            GlowCloud.getGlowCloud().getLogger().debug("The debug mode is now §aenabled§8.");
+        } else {
+            GlowCloud.getGlowCloud().getLogger().debug("The debug mode is now §cdisabled§8.");
+            GlowCloud.getGlowCloud().getLogger().setDebugging(false);
+        }
     }
 }

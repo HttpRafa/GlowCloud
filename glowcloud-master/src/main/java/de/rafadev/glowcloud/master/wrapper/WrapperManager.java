@@ -13,8 +13,6 @@ import de.rafadev.glowcloud.lib.classes.server.CloudServer;
 import de.rafadev.glowcloud.lib.document.Document;
 import de.rafadev.glowcloud.lib.file.CloudReader;
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
-import de.rafadev.glowcloud.lib.network.protocol.ProtocolSender;
-import de.rafadev.glowcloud.lib.network.protocol.packet.PacketSender;
 import de.rafadev.glowcloud.master.event.events.CloudWrapperConnectEvent;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
 import de.rafadev.glowcloud.master.main.GlowCloud;
@@ -106,11 +104,7 @@ public class WrapperManager {
 
             CloudWrapperConnectEvent cloudWrapperConnectEvent = new CloudWrapperConnectEvent((OfflineCloudWrapper) cloudWrapper, identifier, channelConnection);
 
-            try {
-                GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(cloudWrapperConnectEvent);
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
-                GlowCloud.getGlowCloud().getLogger().handleException(e);
-            }
+            GlowCloud.getGlowCloud().getModuleManager().getEventManager().callEvent(cloudWrapperConnectEvent);
 
             if(!cloudWrapperConnectEvent.isCancelled()) {
 
@@ -124,6 +118,7 @@ public class WrapperManager {
 
                 return true;
             } else {
+                channelConnection.close();
                 return false;
             }
         } else {

@@ -19,6 +19,7 @@ public class CloudServer extends PacketSender implements IGlowCloudObject {
 
     private String serviceID;
     private UUID uuid;
+    private int port = 0;
     private SimpleCloudServerGroup cloudServerGroup;
     private SimpleCloudTemplate template;
 
@@ -27,6 +28,14 @@ public class CloudServer extends PacketSender implements IGlowCloudObject {
         this.uuid = uuid;
         this.cloudServerGroup = cloudServerGroup;
         this.template = cloudTemplate;
+    }
+
+    public CloudServer(String serviceID, UUID uuid, int port, SimpleCloudServerGroup cloudServerGroup, SimpleCloudTemplate template) {
+        this.serviceID = serviceID;
+        this.uuid = uuid;
+        this.port = port;
+        this.cloudServerGroup = cloudServerGroup;
+        this.template = template;
     }
 
     public SimpleCloudServerGroup getCloudServerGroup() {
@@ -60,4 +69,17 @@ public class CloudServer extends PacketSender implements IGlowCloudObject {
     public void setTemplate(SimpleCloudTemplate template) {
         this.template = template;
     }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public CloudServer toSimple() {
+        return new CloudServer(getServiceID(), getUUID(), getPort(), getCloudServerGroup(), getTemplate());
+    }
+
 }

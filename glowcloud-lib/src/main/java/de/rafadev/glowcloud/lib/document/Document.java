@@ -68,6 +68,11 @@ public class Document implements IGlowCloudObject {
         return this;
     }
 
+    public Document append(String key, Object value) {
+        data.add(key, JsonParser.parseString(gson.toJson(value)));
+        return this;
+    }
+
     public String getAsString(String key) {
         return data.get(key).getAsString();
     }

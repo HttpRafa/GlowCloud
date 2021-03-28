@@ -19,6 +19,10 @@ public class ChannelConnection implements IGlowCloudObject {
         this.channel = channel;
     }
 
+    public void close() {
+        channel.close();
+    }
+
     public Channel getChannel() {
         return channel;
     }

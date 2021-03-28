@@ -12,7 +12,7 @@
   },
   "cloud": {
     "maxServerCount": -1,
-    "minServerCount": 2,
+    "minServerCount": 1,
     "newServerPercent": 100
   },
   "state": {
@@ -21,10 +21,11 @@
   "template": {
     "groupMode": "DYNAMIC",
     "defaultTemplate": "default",
+    "useRandomTemplate": false,
     "templates": [
       {
         "name": "default",
-        "version": "main"
+        "version": "bukkit"
       }
     ]
   },

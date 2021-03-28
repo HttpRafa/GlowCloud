@@ -54,6 +54,6 @@ public class CloudTemplateSystem {
     }
 
     public CloudTemplate getSelectedTemplate() {
-        return useRandom ? templates.get(new Random().nextInt(templates.size() + 1) - 1) : templates.stream().filter(item -> item.getName().equals(selectedTemplate)).collect(Collectors.toList()).get(0);
+        return useRandom ? (templates.size() > 1 ? templates.get(new Random().nextInt(templates.size() - 1) + 1) : templates.get(0)) : templates.stream().filter(item -> item.getName().equals(selectedTemplate)).collect(Collectors.toList()).get(0);
     }
 }

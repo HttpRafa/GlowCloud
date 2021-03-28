@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GlowCloud.iml" filepath="$PROJECT_DIR$/GlowCloud.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-core/glowcloud-api/glowcloud-api.iml" filepath="$PROJECT_DIR$/glowcloud-core/glowcloud-api/glowcloud-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-core/glowcloud-bridge/glowcloud-bridge.iml" filepath="$PROJECT_DIR$/glowcloud-core/glowcloud-bridge/glowcloud-bridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-core/glowcloud-core.iml" filepath="$PROJECT_DIR$/glowcloud-core/glowcloud-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-lib/glowcloud-lib.iml" filepath="$PROJECT_DIR$/glowcloud-lib/glowcloud-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-master/glowcloud-master.iml" filepath="$PROJECT_DIR$/glowcloud-master/glowcloud-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-modules.iml" filepath="$PROJECT_DIR$/glowcloud-modules/glowcloud-modules.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-notifymodule/glowcloud-notifymodule.iml" filepath="$PROJECT_DIR$/glowcloud-modules/glowcloud-notifymodule/glowcloud-notifymodule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-core/glowcloud-plugin/glowcloud-plugin.iml" filepath="$PROJECT_DIR$/glowcloud-core/glowcloud-plugin/glowcloud-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-signmodule/glowcloud-signmodule.iml" filepath="$PROJECT_DIR$/glowcloud-modules/glowcloud-signmodule/glowcloud-signmodule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/glowcloud-wrapper/glowcloud-wrapper.iml" filepath="$PROJECT_DIR$/glowcloud-wrapper/glowcloud-wrapper.iml" />
+    </modules>
+  </component>
+</project>

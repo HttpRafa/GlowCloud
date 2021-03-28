@@ -1,6 +1,6 @@
 {
   "name": "GlowCloud-SignModule",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "de.rafadev.glowcloud.modules.sign.SignModule",
   "author": "RafaDev"
 }

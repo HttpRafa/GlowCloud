@@ -8,7 +8,6 @@ package de.rafadev.glowcloud.master.server;
 //
 //------------------------------
 
-import com.google.gson.Gson;
 import de.rafadev.glowcloud.lib.classes.selector.Selector;
 import de.rafadev.glowcloud.master.event.events.CloudServerAddToQueueEvent;
 import de.rafadev.glowcloud.master.event.events.CloudServerStartEvent;
@@ -24,9 +23,8 @@ import de.rafadev.glowcloud.master.server.classes.OnlineCloudServer;
 import de.rafadev.glowcloud.master.server.classes.QueueCloudServer;
 import de.rafadev.glowcloud.master.server.seletor.CloudServerGroupSelector;
 import de.rafadev.glowcloud.master.server.seletor.CloudServerSelector;
-import de.rafadev.glowcloud.master.server.seletor.CloudStringSelector;
+import de.rafadev.glowcloud.lib.classes.selector.selectors.CloudStringSelector;
 import de.rafadev.glowcloud.master.server.seletor.CloudWrapperSelector;
-import de.rafadev.glowcloud.master.wrapper.classes.CloudWrapper;
 import de.rafadev.glowcloud.master.wrapper.classes.ConnectedCloudWrapper;
 
 import java.util.LinkedList;
@@ -58,7 +56,7 @@ public class ServerManager {
             OnlineCloudServer onlineCloudServer = new OnlineCloudServer(cloudServer.getServiceID(), cloudServer.getUUID(), cloudServer.getCloudServerGroup(), queueCloudServer.getTemplate());
             servers.add(onlineCloudServer);
 
-            GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8] §7is registered §7on §eGlow§6Cloud");
+            GlowCloud.getGlowCloud().getLogger().info("The server §8[§e" + cloudServer.getServiceID() + "§8@§6" + cloudServer.getCloudServerGroup().getWrapperID() + "§8/§e" + cloudServer.getPort() + "§8] §7is registered §7on §eGlow§6Cloud");
 
         }
 
@@ -164,8 +162,6 @@ public class ServerManager {
 
             CloudServerSelector cloudServerSelector = (CloudServerSelector) selector;
 
-            unRegisterServer(cloudServerSelector.getSelected());
-
             if (GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerSelector.getSelected().getCloudServerGroup().getWrapperID()) instanceof ConnectedCloudWrapper) {
 
                 ConnectedCloudWrapper cloudWrapper = (ConnectedCloudWrapper) GlowCloud.getGlowCloud().getWrapperManager().search(cloudServerSelector.getSelected().getCloudServerGroup().getWrapperID());
@@ -210,8 +206,6 @@ public class ServerManager {
 
             for (CloudServer cloudServer : serversList) {
                 if (cloudServer instanceof OnlineCloudServer) {
-
-                    unRegisterServer(cloudServer);
 
                     if (GlowCloud.getGlowCloud().getWrapperManager().search(cloudServer.getCloudServerGroup().getWrapperID()) instanceof ConnectedCloudWrapper) {
 

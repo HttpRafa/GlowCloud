@@ -24,6 +24,8 @@ public class CloudServerQueue implements IGlowCloudObject {
         GlowCloudWrapper.getGlowCloud().getLogger().info("§7The server §e" + cloudServer.getServiceID() + " §7is now in the wrapper queue§8. [§e" + queue.size() + "§8]");
         queue.add(cloudServer);
 
+        GlowCloudWrapper.getGlowCloud().getServerManager().block();
+
     }
 
     public void removeFromQueue(QueueCloudServer cloudServer) {

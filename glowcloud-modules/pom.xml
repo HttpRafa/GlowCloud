@@ -8,8 +8,13 @@
         <version>2.0.0-ALPHA</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
 
     <artifactId>glowcloud-modules</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>glowcloud-signmodule</module>
+        <module>glowcloud-notifymodule</module>
+    </modules>
+
 
 </project>

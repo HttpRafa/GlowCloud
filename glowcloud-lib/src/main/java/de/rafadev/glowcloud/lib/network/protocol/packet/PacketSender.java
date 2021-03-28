@@ -14,7 +14,6 @@ import de.rafadev.glowcloud.lib.network.protocol.packet.Packet;
 public class PacketSender extends ProtocolSender {
 
     public void writePacket(Packet packet) {
-
     }
 
     public void writePacket(Packet... packets) {

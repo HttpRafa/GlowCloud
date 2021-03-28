@@ -3,7 +3,7 @@
   <parent>
     <artifactId>GlowCloud</artifactId>
     <groupId>de.rafadev</groupId>
-    <version>1.0-ALPHA</version>
+    <version>2.0.0-ALPHA</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>glowcloud-wrapper</artifactId>
@@ -29,7 +29,7 @@
         <configuration>
           <archive>
             <manifestEntries>
-              <Main-Class>de.rafadev.glowcloudwrapper.bootstrap.GlowCloudWrapperLauncher</Main-Class>
+              <Main-Class>de.rafadev.glowcloud.wrapper.bootstrap.GlowCloudWrapperLauncher</Main-Class>
               <Version>${project.version}</Version>
               <Implementation-Version>${service.version}</Implementation-Version>
               <Specification-Version>${service.type}</Specification-Version>

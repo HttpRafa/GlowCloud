@@ -18,9 +18,9 @@ import java.util.UUID;
 
 public class Packet implements IGlowCloudObject {
 
-    protected long id;
-    protected UUID uuid;
-    protected Document document;
+    private long id;
+    private UUID uuid;
+    private Document document;
 
     public Packet(long id, UUID uuid, Document document) {
         this.id = id;

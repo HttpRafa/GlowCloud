@@ -1,1 +1,3 @@
 de\rafadev\glowcloud\modules\sign\SignModule.class
+de\rafadev\glowcloud\modules\sign\commands\SignCommand.class
+de\rafadev\glowcloud\modules\sign\listener\WrapperConnectListener.class

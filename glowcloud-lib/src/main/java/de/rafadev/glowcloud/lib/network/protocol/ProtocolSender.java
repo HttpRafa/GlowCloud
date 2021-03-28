@@ -9,6 +9,7 @@ package de.rafadev.glowcloud.lib.network.protocol;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
+import de.rafadev.glowcloud.lib.network.ChannelConnection;
 import io.netty.channel.Channel;
 
 public class ProtocolSender implements IGlowCloudObject {
@@ -17,6 +18,10 @@ public class ProtocolSender implements IGlowCloudObject {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    public ChannelConnection getAsChannelConnection() {
+        return new ChannelConnection(channel);
     }
 
     public void setChannel(Channel channel) {

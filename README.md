@@ -1,5 +1,3 @@
-![Logo](https://github.com/HttpRafa/GlowCloud/blob/2.0.0/web/GlowCloud.jpg?raw=true)
-
 # GlowCloud Technology 2
 
 Here you can find the whole project of the Cloud GlowCloud, have fun.

@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CloudEventManager {
 
@@ -49,6 +50,17 @@ public class CloudEventManager {
 
     public void register(CloudEventListener cloudEventListener, CloudModule cloudModule) {
         listeners.add(new CloudEventListenerItem(cloudEventListener, cloudModule));
+    }
+
+    public void clear() {
+        listeners.clear();
+    }
+
+    public void clear(CloudModule cloudModule) {
+
+        List<CloudEventListenerItem> list = listeners.stream().filter(item -> item.getCloudModule() == cloudModule).collect(Collectors.toList());
+        listeners.removeAll(list);
+
     }
 
 }

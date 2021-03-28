@@ -10,11 +10,18 @@ package de.rafadev.glowcloud.master.group.bukkit;
 
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.master.group.classes.CloudServerGroup;
+import de.rafadev.glowcloud.master.template.CloudTemplateSystem;
 
 public class CloudBukkitGroup extends CloudServerGroup {
 
+    private CloudTemplateSystem cloudTemplateSystem;
+
     public CloudBukkitGroup(SimpleCloudServerGroup simpleCloudServerGroup) {
         super(simpleCloudServerGroup);
+        cloudTemplateSystem = new CloudTemplateSystem(this);
     }
 
+    public CloudTemplateSystem getCloudTemplateSystem() {
+        return cloudTemplateSystem;
+    }
 }

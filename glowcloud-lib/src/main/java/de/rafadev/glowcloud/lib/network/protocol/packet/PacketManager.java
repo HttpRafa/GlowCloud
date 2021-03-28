@@ -8,26 +8,36 @@ package de.rafadev.glowcloud.lib.network.protocol.packet;
 //
 //------------------------------
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+import de.rafadev.glowcloud.lib.CloudValue;
 import de.rafadev.glowcloud.lib.document.Document;
+import de.rafadev.glowcloud.lib.exception.NoConnectionFoundException;
+import de.rafadev.glowcloud.lib.logging.CloudLogger;
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
 import de.rafadev.glowcloud.lib.network.encryption.EncryptionHandler;
+import de.rafadev.glowcloud.lib.network.protocol.packet.request.Result;
+import de.rafadev.glowcloud.lib.network.utils.CloudUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PacketManager {
 
-    private List<PacketHandlerElement> handlers = new LinkedList<>();
+    private HashMap<UUID, CloudValue<Result>> queryRequests = new HashMap<>();
 
+    private List<PacketHandlerElement> handlers = new LinkedList<>();
+    private CloudLogger cloudLogger;
     private final EncryptionHandler encryptionHandler = new EncryptionHandler();
+
+    public PacketManager(CloudLogger cloudLogger) {
+        this.cloudLogger = cloudLogger;
+    }
 
     public void registerHandler(long id, PacketInHandler handler) {
         PacketHandlerElement packetHandlerElement = new PacketHandlerElement(id, handler);
@@ -35,13 +45,24 @@ public class PacketManager {
     }
 
     public Packet toPacket(ByteBuf byteBuf) {
-        byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
+        try {
+            byte[] bytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(bytes);
 
-        String packetString = new String(bytes, StandardCharsets.UTF_8);
-        JsonObject jsonObject = new JsonParser().parse(packetString).getAsJsonObject();
+            String packetString = new String(bytes, StandardCharsets.UTF_8);
+            cloudLogger.debug(packetString);
 
-        return new Packet(jsonObject.get("id").getAsLong(), UUID.fromString(jsonObject.get("uuid").getAsString()), new Document(jsonObject.get("document").getAsJsonObject()));
+            JsonReader jsonReader = new JsonReader(new StringReader(packetString));
+            jsonReader.setLenient(true);
+
+            JsonObject jsonObject = new JsonParser().parse(jsonReader).getAsJsonObject();
+
+            return new Packet(jsonObject.get("id").getAsLong(), UUID.fromString(jsonObject.get("uuid").getAsString()), new Document(jsonObject.get("document").getAsJsonObject()));
+        } catch (Exception exception) {
+            if(cloudLogger != null) cloudLogger.handleException(exception);
+        }
+
+        return new Packet(PacketRC.MAIN - 99, UUID.randomUUID(), new Document());
     }
 
     public void handle(ByteBuf byteBuf, PacketSender packetSender) {
@@ -49,10 +70,25 @@ public class PacketManager {
         try {
             Packet packet = toPacket(byteBuf);
 
-            List<PacketHandlerElement> elements = handlers.stream().filter(item -> item.getId() == packet.id).collect(Collectors.toList());
+            if(cloudLogger != null) {
+                if(packetSender.getChannel() != null) {
+                    cloudLogger.debug("§bConnection§8[§b" + packetSender.getChannel().remoteAddress().toString() + "§8] §7<-- §bPacket§8[§b" + packet.getId() + "§8/§b" + packet.getUuid().toString() + "§8]");
+                }
+            }
 
-            for (PacketHandlerElement element : elements) {
-                element.getHandler().handle(packet.document, packetSender);
+            if(!queryRequests.containsKey(packet.getUuid())) {
+                List<PacketHandlerElement> elements = handlers.stream().filter(item -> item.getId() == packet.getId()).collect(Collectors.toList());
+
+                for (PacketHandlerElement element : elements) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            element.getHandler().handle(packet.getDocument(), packetSender);
+                        }
+                    }, "PacketHandler").start();
+                }
+            } else {
+                queryRequests.get(packet.getUuid()).override(new Result(packet.getUuid(), -1, packet.getDocument()));
             }
 
         } catch (Exception exception) {
@@ -60,12 +96,74 @@ public class PacketManager {
         }
     }
 
+    public Result writeRequest(ChannelConnection channelConnection, Packet packet) {
+        if(channelConnection != null && channelConnection.getChannel() != null) {
+
+            /*
+                Creating a request
+            */
+            UUID uniqueId = UUID.randomUUID();
+            packet.setUuid(uniqueId);
+
+            CloudValue<Result> value = new CloudValue<>(null);
+            queryRequests.put(uniqueId, value);
+
+            CloudUtils.inNewThread(new Runnable() {
+                @Override
+                public void run() {
+                    writePacket(channelConnection, packet);
+                }
+            });
+
+            int time=0;
+            while(queryRequests.get(uniqueId).get() == null && time < 4000) {
+                time++;
+
+                /*
+                    Sleep
+                 */
+                CloudUtils.sleep(0, 1000 * 100 * 50);
+            }
+
+            if(time > 4000) {
+                queryRequests.get(uniqueId).override(new Result(uniqueId, time, new Document()));
+            } else {
+                Result result = queryRequests.get(uniqueId).get();
+                result.setTime(time);
+                queryRequests.get(uniqueId).override(result);
+            }
+
+            CloudValue<Result> resultSet = queryRequests.get(uniqueId);
+            queryRequests.remove(uniqueId);
+            return resultSet.get();
+
+        } else {
+            if(cloudLogger != null) cloudLogger.handleException(new NoConnectionFoundException());
+        }
+
+        return null;
+
+    }
+
+
     public void writePacket(ChannelConnection channelConnection, Packet packet) {
 
-        ByteBuf byteBuf = Unpooled.buffer();
-        byte[] bytes = encryptionHandler.encode(new String(packet.toBytes(), StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
-        byteBuf.writeBytes(bytes);
-        channelConnection.getChannel().writeAndFlush(byteBuf);
+        if(channelConnection != null && channelConnection.getChannel() != null) {
+
+            String packetString = new String(packet.toBytes(), StandardCharsets.UTF_8);
+            byte[] bytes = encryptionHandler.encode(packetString).getBytes(StandardCharsets.UTF_8);
+
+            ByteBuf byteBuf = Unpooled.buffer(bytes.length);
+            byteBuf.writeBytes(bytes);
+            channelConnection.getChannel().writeAndFlush(byteBuf);
+
+            if (cloudLogger != null) cloudLogger.debug("§bPacket§8[§b" + packet.getId() + "§8/§b" + packet.getUuid() + "§8] §7--> §bConnection§8[§b" + channelConnection.getChannel().remoteAddress().toString() + "§8]");
+
+        } else {
+
+            if(cloudLogger != null) cloudLogger.handleException(new NoConnectionFoundException());
+
+        }
 
     }
 

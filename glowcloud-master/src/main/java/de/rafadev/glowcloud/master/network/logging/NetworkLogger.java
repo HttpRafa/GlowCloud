@@ -10,9 +10,7 @@ package de.rafadev.glowcloud.master.network.logging;
 
 import de.rafadev.glowcloud.master.main.GlowCloud;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -39,8 +37,17 @@ public class NetworkLogger {
     public void log(String val) {
 
         try {
+
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(logFile));
+            StringBuilder builder = new StringBuilder();
+
+            String buffer;
+            while ((buffer = bufferedReader.readLine()) != null) {
+                builder.append(buffer + "\n");
+            }
+
             FileWriter fileWriter = new FileWriter(logFile);
-            fileWriter.write(val + "\n");
+            fileWriter.write(builder.toString() + "[ " + new SimpleDateFormat("dd.MM.yyyy HH:mm:ss@SS").format(new Date()) + " ] " + val + "\n");
             fileWriter.flush();
             fileWriter.close();
         } catch (IOException e) {

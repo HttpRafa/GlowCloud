@@ -8,13 +8,12 @@ package de.rafadev.glowcloud.master.server.classes;
 //
 //------------------------------
 
-import com.google.gson.Gson;
 import de.rafadev.glowcloud.lib.classes.group.SimpleCloudServerGroup;
 import de.rafadev.glowcloud.lib.classes.server.CloudServer;
 import de.rafadev.glowcloud.lib.network.ChannelConnection;
 import de.rafadev.glowcloud.lib.template.SimpleCloudTemplate;
 import de.rafadev.glowcloud.master.main.GlowCloud;
-import de.rafadev.glowcloud.master.server.seletor.CloudStringSelector;
+import de.rafadev.glowcloud.lib.classes.selector.selectors.CloudStringSelector;
 
 import java.util.UUID;
 

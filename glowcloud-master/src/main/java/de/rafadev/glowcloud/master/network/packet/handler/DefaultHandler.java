@@ -22,6 +22,8 @@ public class DefaultHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
 
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (channelRead0) " + ctx.channel().remoteAddress() + " byte[" + msg.readableBytes() + "]");
+
         GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getPacketManager().handle(msg, (PacketSender) GlowCloud.getGlowCloud().getNetworkManager().getNetworkServer().getProtocolSender(new ChannelConnection(ctx.channel())));
 
     }
@@ -39,10 +41,17 @@ public class DefaultHandler extends SimpleChannelInboundHandler<ByteBuf> {
             GlowCloud.getGlowCloud().getLogger().handleException(exception);
         }
 
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (channelUnregistered) " + ctx.channel().remoteAddress());
+
+    }
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) {
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (channelRegistered) " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (" + cause.getClass().getSimpleName() + ") " + cause.getMessage());
+        GlowCloud.getGlowCloud().getNetworkManager().getNetworkLogger().log(getClass().getSimpleName() + ": (" + cause.getClass().getSimpleName() + ") [" + ctx.channel().remoteAddress() + "] " + cause.getMessage());
     }
 }

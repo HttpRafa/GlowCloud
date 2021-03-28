@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="glowcloud-wrapper" />
+        <module name="glowcloud-api" />
+        <module name="glowcloud-signmodule" />
+        <module name="glowcloud-master" />
+        <module name="glowcloud-notifymodule" />
+        <module name="glowcloud-plugin" />
+        <module name="glowcloud-lib" />
+        <module name="glowcloud-bridge" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="GlowCloud" target="1.8" />
+      <module name="glowcloud-api" target="1.8" />
+      <module name="glowcloud-bridge" target="1.8" />
+      <module name="glowcloud-core" target="1.8" />
+      <module name="glowcloud-lib" target="1.8" />
+      <module name="glowcloud-master" target="1.8" />
+      <module name="glowcloud-modules" target="1.8" />
+      <module name="glowcloud-notifymodule" target="1.8" />
+      <module name="glowcloud-plugin" target="1.8" />
+      <module name="glowcloud-signmodule" target="1.8" />
+      <module name="glowcloud-wrapper" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -11,6 +11,9 @@ package de.rafadev.glowcloud.modules.sign;
 import de.rafadev.glowcloud.master.main.GlowCloud;
 import de.rafadev.glowcloud.master.module.CloudModule;
 import de.rafadev.glowcloud.modules.sign.commands.SignCommand;
+import de.rafadev.glowcloud.modules.sign.listener.WrapperConnectListener;
+
+import java.util.UUID;
 
 public class SignModule extends CloudModule {
 
@@ -21,6 +24,8 @@ public class SignModule extends CloudModule {
 
     @Override
     public void onEnable() {
+
+        GlowCloud.getGlowCloud().getModuleManager().getEventManager().register(new WrapperConnectListener(), this);
 
     }
 

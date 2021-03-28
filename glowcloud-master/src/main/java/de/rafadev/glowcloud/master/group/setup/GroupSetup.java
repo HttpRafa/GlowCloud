@@ -11,7 +11,6 @@ package de.rafadev.glowcloud.master.group.setup;
 import de.rafadev.glowcloud.lib.enums.GroupMode;
 import de.rafadev.glowcloud.lib.enums.ServerType;
 import de.rafadev.glowcloud.master.main.GlowCloud;
-import javafx.scene.effect.Glow;
 
 public class GroupSetup {
 
@@ -50,14 +49,20 @@ public class GroupSetup {
         } else if(step == 4) {
             try {
                 groupSetupResult.setGroupMode(GroupMode.valueOf(object.toString()));
-                GlowCloud.getGlowCloud().getLogger().info("Is the server a BUKKIT or a BUNGEECORD server?");
+                GlowCloud.getGlowCloud().getLogger().info("Is the server a BUKKIT(for Lobbys \"LOBBY\") or a BUNGEECORD server?");
             } catch (Exception ex) {
                 GlowCloud.getGlowCloud().getLogger().error("What you have entered is not available.");
                 return;
             }
         } else if(step == 5) {
             try {
-                groupSetupResult.setServerType(ServerType.valueOf(object.toString()));
+                if(object.toString().equalsIgnoreCase("LOBBY")) {
+                    groupSetupResult.setServerType(ServerType.BUKKIT);
+                    groupSetupResult.setFallback(true);
+                } else {
+                    groupSetupResult.setServerType(ServerType.valueOf(object.toString()));
+                    groupSetupResult.setFallback(false);
+                }
                 GlowCloud.getGlowCloud().getLogger().info("The setup is finished.");
                 step = -1;
                 GlowCloud.getGlowCloud().getGroupManager().createGroup(groupSetupResult);

@@ -11,6 +11,7 @@ package de.rafadev.glowcloud.lib.logging.exeption;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudHandler;
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
 import de.rafadev.glowcloud.lib.logging.CloudLogger;
+import de.rafadev.glowcloud.lib.logging.color.ConsoleColor;
 
 public class ExceptionHandler implements IGlowCloudObject, IGlowCloudHandler {
 
@@ -23,6 +24,10 @@ public class ExceptionHandler implements IGlowCloudObject, IGlowCloudHandler {
     @Override
     public void handle(Object object) {
         Exception exception = (Exception) object;
-        cloudLogger.error("An Exception has occurred: " + exception.getMessage());
+        System.out.println(ConsoleColor.toColouredString('§', "\n§cAn Exception has occurred§8: §4" + exception.getMessage()));
+        System.out.println(ConsoleColor.toColouredString('§', "§c"));
+        exception.printStackTrace();
+        System.out.println(ConsoleColor.toColouredString('§', "§r"));
+        cloudLogger.error("This error is not intentional");
     }
 }

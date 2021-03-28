@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-bridge/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-bridge/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-plugin/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-core/glowcloud-plugin/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-lib/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-lib/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-master/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-master/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-notifymodule/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-notifymodule/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-signmodule/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-modules/glowcloud-signmodule/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-wrapper/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/glowcloud-wrapper/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

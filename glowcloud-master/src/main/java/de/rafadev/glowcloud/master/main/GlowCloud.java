@@ -18,6 +18,7 @@ import de.rafadev.glowcloud.master.group.GroupManager;
 import de.rafadev.glowcloud.master.key.KeyManager;
 import de.rafadev.glowcloud.master.module.manager.CloudModuleManager;
 import de.rafadev.glowcloud.master.network.manager.NetworkManager;
+import de.rafadev.glowcloud.master.server.ServerManager;
 import de.rafadev.glowcloud.master.wrapper.WrapperManager;
 
 public class GlowCloud {
@@ -34,6 +35,7 @@ public class GlowCloud {
     private CloudModuleManager moduleManager;
     private KeyManager keyManager;
     private WrapperManager wrapperManager;
+    private ServerManager serverManager;
 
     private GlowScheduler scheduler;
 
@@ -76,6 +78,7 @@ public class GlowCloud {
         commandManager = new CommandManager(logger);
         moduleManager = new CloudModuleManager();
         keyManager = new KeyManager();
+        serverManager = new ServerManager();
 
 
         /*
@@ -86,6 +89,7 @@ public class GlowCloud {
         commandManager.registerCommand(new HelpCommand("help", null, "Displays all executable commands"));
         commandManager.registerCommand(new DebugCommand("debug", null, "Enable the DebugMode for the Cloud"));
         commandManager.registerCommand(new ClearCommand("clear", null, "Deletes the displayed console"));
+        commandManager.registerCommand(new WrapperCommand("wrapper", null, "Shows all registered wrapper"));
         commandManager.registerCommand(new ReloadCommand("reload", "§8<§eall, configs§8>", "Reload the GlowCloud application"));
         commandManager.registerCommand(new CreateCommand("create", "§8<§eServerGroup§8>", "Creates a servergroup or a wrapper"));
         commandManager.registerCommand(new GroupCommand("group", "§8<§eset§8> <§emaintenance§8> §8<§evalue§8>", "Manage a servergroup"));
@@ -144,6 +148,11 @@ public class GlowCloud {
         moduleManager.disableModules();
 
         /*
+        Unregister all EventHandler
+         */
+        moduleManager.getEventManager().clear();
+
+        /*
          Load all Modules
          */
         moduleManager.loadModules();
@@ -168,7 +177,19 @@ public class GlowCloud {
         if(!fileManager.isFirstStart()) {
             logger.info("Cloud is shutting down...");
 
-            logger.overrideLine(1, "Closing the NetworkServer... §8[§cClosing§8]");
+            logger.overrideLine(1, "Closing the NetworkServer... §8[§6Closing§8]");
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if(networkManager != null && networkManager.getNetworkServer() != null && networkManager.getNetworkServer().shutdown()) {
+                logger.overrideLine(1, "Closing the NetworkServer... §8[§cClosed§8] ");
+            } else {
+                logger.overrideLine(1, "Closing the NetworkServer... §8[§4Failed§8] ");
+            }
 
             try {
                 Thread.sleep(1000);
@@ -176,20 +197,12 @@ public class GlowCloud {
                 e.printStackTrace();
             }
 
-            if(networkManager != null && networkManager.getNetworkServer() != null && networkManager.getNetworkServer().shutdown()) {
-                logger.overrideLine(1, "Closing the NetworkServer... §8[§aClosed§8] ");
-            } else {
-                logger.overrideLine(1, "Closing the NetworkServer... §8[§4Failed§8] ");
-            }
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
             logger.info("§7Thanks for using §eGlowCloud§8.");
         }
+    }
+
+    public void emtpy() {
+
     }
 
     public CommandManager getCommandManager() {
@@ -222,6 +235,10 @@ public class GlowCloud {
 
     public GroupManager getGroupManager() {
         return groupManager;
+    }
+
+    public ServerManager getServerManager() {
+        return serverManager;
     }
 
     public CloudLogger getLogger() {

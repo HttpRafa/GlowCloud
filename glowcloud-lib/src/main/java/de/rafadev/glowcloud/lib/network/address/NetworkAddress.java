@@ -9,7 +9,6 @@ package de.rafadev.glowcloud.lib.network.address;
 //------------------------------
 
 import de.rafadev.glowcloud.lib.interfaces.IGlowCloudObject;
-import de.rafadev.glowcloud.lib.network.utils.NetworkUtils;
 
 import java.net.InetSocketAddress;
 
@@ -52,4 +51,8 @@ public class NetworkAddress implements IGlowCloudObject {
         this.port = port;
     }
 
+    @Override
+    public String toString() {
+        return host + ":" + port;
+    }
 }
